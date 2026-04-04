@@ -1,0 +1,38 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+// Australian postcode format: exactly 4 digits
+const AUSTRALIAN_POSTCODE_REGEX = /^\d{4}$/
+
+function validatePostcodeFormat(postcode: string): boolean {
+  return AUSTRALIAN_POSTCODE_REGEX.test(postcode.trim())
+}
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const postcode = searchParams.get("postcode");
+
+  if (!postcode) {
+    return NextResponse.json({ error: "postcode is required" }, { status: 400 });
+  }
+
+  const trimmedPostcode = postcode.trim()
+
+  // Validate postcode format: must be exactly 4 digits (Australian format)
+  if (!validatePostcodeFormat(trimmedPostcode)) {
+    return NextResponse.json(
+      { error: "Invalid postcode format. Please enter a 4-digit Australian postcode.", eligible: false },
+      { status: 400 }
+    )
+  }
+
+  const zone = await prisma.deliveryZone.findFirst({
+    where: { postcode: trimmedPostcode, isActive: true },
+  });
+
+  return NextResponse.json({
+    eligible: !!zone,
+    postcode: trimmedPostcode,
+  });
+}
+

@@ -1,0 +1,228 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          UserRole  @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+  profile       UserProfile?
+
+  @@map("users")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum MealType {
+  DAILY
+  EVENT
+  BOTH
+}
+
+enum PricingType {
+  PER_ITEM
+  PER_DOZEN
+  PER_PERSON
+  PER_SKEWER
+  SIZED
+}
+
+model Meal {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  price       Float       // Base price (used for PER_ITEM, PER_DOZEN, PER_PERSON, PER_SKEWER)
+  imageUrl    String?
+  category    String?
+  isAvailable Boolean     @default(true)
+  mealType    MealType    @default(DAILY)
+  pricingType PricingType @default(PER_ITEM)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+
+  // Size-based pricing (for SIZED pricing type)
+  priceSmall      Float?
+  priceMedium     Float?
+  priceLarge      Float?
+  priceBainMarie  Float?
+
+  // Minimum order requirements
+  minimumQuantity Int?      // e.g., 12 for Paella (per person), 12 for per-dozen items
+
+  // Allergy and dietary information
+  containsEgg       Boolean @default(false)
+  containsWheat     Boolean @default(false)
+  containsPeanut    Boolean @default(false)
+  isVegan           Boolean @default(false)
+  isVegetarian      Boolean @default(false)
+  isGlutenFree      Boolean @default(false)
+  ingredients       String?
+  allergyNotes      String?
+  
+  // NDIS support
+  isNDISReady       Boolean @default(false)
+
+  @@map("meals")
+}
+
+model Event {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  date        DateTime
+  location    String?
+  maxGuests   Int?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("events")
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  userId          String
+  status          OrderStatus   @default(PENDING)
+  paymentMethod   PaymentMethod @default(STRIPE)
+  expiresAt       DateTime?
+  orderType       OrderType     @default(STANDARD)
+  isEventConfirmed Boolean      @default(false)
+  subtotal        Float
+  deliveryFee     Float         @default(0)
+  stripeFee       Float         @default(0)
+  totalAmount     Float
+  depositAmount   Float         @default(0)
+  remainingAmount Float         @default(0)
+  depositPaid     Boolean       @default(false)
+  deliveryDate    DateTime
+  deliveryType    DeliveryType  @default(DELIVERY)
+  deliveryZone    DeliveryZoneType?
+  postcode        String?
+  allergiesNote   String?
+  deliveryZoneId  String?
+  /// PENDING | SENT | FAILED — set after order confirmation email dispatch
+  emailStatus     String        @default("PENDING")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items           OrderItem[]
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  PENDING_PAYMENT
+  CONFIRMED
+  PREPARING
+  READY
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  STRIPE
+  BANK_TRANSFER
+}
+
+enum OrderType {
+  STANDARD
+  EVENT
+}
+
+enum DeliveryType {
+  DELIVERY
+  PICKUP
+}
+
+enum DeliveryZoneType {
+  ZONE_1
+  ZONE_2
+  ZONE_3
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  mealId    String
+  quantity  Int
+  price     Float   // Final price per unit (after size selection)
+  size      String? // Size selected: "SMALL", "MEDIUM", "LARGE", "BAIN_MARIE", or null
+  bainMarieFee Float @default(0) // Additional $55 per tray for Bain-Marie service
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  meal      Meal     @relation(fields: [mealId], references: [id])
+
+  @@map("order_items")
+}
+
+
+model DeliveryZone {
+  id          String   @id @default(cuid())
+  postcode    String
+  suburb      String
+  isActive    Boolean  @default(true)
+  deliveryFee Float    @default(0)
+  minimumOrder Float   @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("delivery_zones")
+}
+
+model QuoteRequest {
+  id              String          @id @default(cuid())
+  name            String
+  email           String
+  phone           String
+  eventType       String
+  estimatedGuests Int?
+  preferredDate   DateTime?
+  suburb          String
+  budgetRange     String?
+  message         String?
+  /// Structured cart snapshot: items, subtotal, deliveryFee, total, source, optional delivery fields
+  cartItems       Json?
+  status          QuoteStatus     @default(NEW)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("quote_requests")
+}
+
+enum QuoteStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  postcode    String?
+  country     String?  @default("Australia")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+

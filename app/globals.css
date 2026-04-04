@@ -1,0 +1,677 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand Colors - Eliora Signature Catering */
+  --darkGreen: #0F3D3E;
+  --gold: #D4AF37;
+  --cream: #FFF9EB;
+  --white: #FFFFFF;
+  
+  /* Legacy support */
+  --gold-logo: #D4AF37;
+  --gold-primary: #D4AF37;
+  --burgundy-primary: #8b2a3c;
+  --cream-background: #FFF9EB;
+  --olive-green: #556b2f;
+  
+  /* Background & Foreground */
+  --background: #faf8f5;
+  --foreground: #2d1b0e;
+  
+  /* Primary Gold Palette - Generated from #c9a96e */
+  --gold-50: #faf8f4;
+  --gold-100: #f5f0e6;
+  --gold-200: #ebe1cd;
+  --gold-300: #e0d2b4;
+  --gold-400: #d5c39b;
+  --gold-500: #c9a96e;
+  --gold-600: #b8975d;
+  --gold-700: #9d7e4c;
+  --gold-800: #7d653c;
+  --gold-900: #5d4c2c;
+  
+  /* Burgundy Palette - Generated from #8b2a3c */
+  --burgundy-50: #f8f2f3;
+  --burgundy-100: #f0e5e7;
+  --burgundy-200: #e1cbcf;
+  --burgundy-300: #d2b1b7;
+  --burgundy-400: #bc8793;
+  --burgundy-500: #8b2a3c;
+  --burgundy-600: #7d2535;
+  --burgundy-700: #6a1f2c;
+  --burgundy-800: #571923;
+  --burgundy-900: #44131a;
+  
+  /* Cream Palette - Generated from #faf8f5 */
+  --cream-50: #fefefd;
+  --cream-100: #faf8f5;
+  --cream-200: #f5f1eb;
+  --cream-300: #f0eae1;
+  --cream-400: #ebe3d7;
+  --cream-500: #e6dccd;
+  --cream-600: #d4c7b3;
+  --cream-700: #b8a68f;
+  --cream-800: #9c856b;
+  --cream-900: #806447;
+  
+  /* Olive Green Palette - Generated from #556b2f */
+  --olive-50: #f4f6f1;
+  --olive-100: #e9ede3;
+  --olive-200: #d3dbc7;
+  --olive-300: #bdc9ab;
+  --olive-400: #91a76b;
+  --olive-500: #556b2f;
+  --olive-600: #4d602a;
+  --olive-700: #405024;
+  --olive-800: #33401d;
+  --olive-900: #263016;
+  
+  /* Neutral Palette (Warm Grays) */
+  --neutral-50: #fafaf9;
+  --neutral-100: #f5f5f4;
+  --neutral-200: #e7e5e4;
+  --neutral-300: #d6d3d1;
+  --neutral-400: #a8a29e;
+  --neutral-500: #78716c;
+  --neutral-600: #57534e;
+  --neutral-700: #44403c;
+  --neutral-800: #292524;
+  --neutral-900: #1c1917;
+  
+  /* Semantic Colors */
+  --primary: var(--gold-primary);
+  --primary-hover: var(--gold-600);
+  --primary-light: var(--gold-100);
+  --primary-dark: var(--gold-700);
+  
+  --secondary: var(--burgundy-primary);
+  --secondary-hover: var(--burgundy-600);
+  --secondary-light: var(--burgundy-100);
+  --secondary-dark: var(--burgundy-700);
+  
+  --accent: var(--olive-green);
+  --accent-hover: var(--olive-600);
+  --accent-light: var(--olive-100);
+  --accent-dark: var(--olive-700);
+  
+  --success: var(--olive-green);
+  --warning: var(--gold-primary);
+  --error: var(--burgundy-primary);
+  --info: var(--neutral-600);
+  
+  /* Text Colors */
+  --text-primary: #2d1b0e;
+  --text-secondary: #44403c;
+  --text-muted: #78716c;
+  --text-light: #a8a29e;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #ffffff;
+  
+  /* Border Colors */
+  --border-light: rgba(139, 42, 60, 0.1);
+  --border-default: rgba(139, 42, 60, 0.2);
+  --border-dark: rgba(139, 42, 60, 0.3);
+  --border-gold: rgba(201, 169, 110, 0.3);
+  
+  /* Shadow Colors - Premium shadows with brand colors */
+  --shadow-sm: rgba(45, 27, 14, 0.05);
+  --shadow-md: rgba(45, 27, 14, 0.1);
+  --shadow-lg: rgba(45, 27, 14, 0.15);
+  --shadow-xl: rgba(45, 27, 14, 0.2);
+  --shadow-gold: rgba(201, 169, 110, 0.2);
+  --shadow-burgundy: rgba(139, 42, 60, 0.15);
+  
+  /* Spacing & Typography */
+  --spacing-section: 6rem;
+  --spacing-section-sm: 4rem;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1c1917;
+    --foreground: #fafaf9;
+    
+    --text-primary: var(--neutral-50);
+    --text-secondary: var(--neutral-300);
+    --text-muted: var(--neutral-500);
+  }
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--darkGreen);
+  background: var(--cream);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.7;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: all 200ms ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Typography - Eliora Signature */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), 'Playfair Display', 'Georgia', serif;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--darkGreen);
+  letter-spacing: -0.02em;
+}
+
+body {
+  font-family: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--gold-logo);
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 4px var(--shadow-sm);
+}
+
+h2 {
+  font-size: 2.75rem;
+  font-weight: 600;
+  color: var(--gold-logo);
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+h3 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gold-logo);
+  margin-bottom: 1rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--gold-logo);
+  margin-bottom: 0.75rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gold-logo);
+  margin-bottom: 0.5rem;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gold-logo);
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.8;
+}
+
+/* Navigation Styles - Premium Elegance */
+@layer components {
+  .nav-container {
+    background: rgba(250, 248, 245, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-gold);
+    box-shadow: 0 2px 8px var(--shadow-sm);
+  }
+
+  .nav-link {
+    color: var(--gold-logo);
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1.25rem;
+    transition: all var(--transition-base);
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: var(--gold-logo);
+    transition: width var(--transition-base);
+  }
+
+  .nav-link:hover {
+    color: var(--gold-logo);
+    opacity: 0.8;
+  }
+
+  .nav-link:hover::after {
+    width: 80%;
+  }
+
+  .nav-link-active {
+    color: var(--gold-logo);
+  }
+
+  .nav-link-active::after {
+    width: 80%;
+  }
+}
+
+/* Button Styles - Premium Lebanese Design */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.875rem 2rem;
+    font-family: 'Georgia', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: 2px solid transparent;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left var(--transition-slow);
+  }
+
+  .btn:hover::before {
+    left: 100%;
+  }
+
+  /* Primary Button - Gold */
+  .btn-primary {
+    background: var(--gold-primary);
+    color: var(--text-on-primary);
+    border-color: var(--gold-primary);
+    box-shadow: 0 4px 12px var(--shadow-gold);
+  }
+
+  .btn-primary:hover {
+    background: var(--gold-600);
+    border-color: var(--gold-600);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow-gold);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px var(--shadow-gold);
+  }
+
+  /* Secondary Button - Burgundy */
+  .btn-secondary {
+    background: var(--burgundy-primary);
+    color: var(--text-on-secondary);
+    border-color: var(--burgundy-primary);
+    box-shadow: 0 4px 12px var(--shadow-burgundy);
+  }
+
+  .btn-secondary:hover {
+    background: var(--burgundy-600);
+    border-color: var(--burgundy-600);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow-burgundy);
+  }
+
+  .btn-secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px var(--shadow-burgundy);
+  }
+
+  /* Outline Button */
+  .btn-outline {
+    background: transparent;
+    color: var(--burgundy-primary);
+    border-color: var(--burgundy-primary);
+  }
+
+  .btn-outline:hover {
+    background: var(--burgundy-primary);
+    color: var(--text-on-secondary);
+    transform: translateY(-2px);
+  }
+
+  /* Accent Button - Olive */
+  .btn-accent {
+    background: var(--olive-green);
+    color: var(--text-on-primary);
+    border-color: var(--olive-green);
+  }
+
+  .btn-accent:hover {
+    background: var(--olive-600);
+    border-color: var(--olive-600);
+    transform: translateY(-2px);
+  }
+
+  /* Button Sizes */
+  .btn-sm {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-lg {
+    padding: 1.125rem 2.5rem;
+    font-size: 1.125rem;
+  }
+
+  .btn-xl {
+    padding: 1.25rem 3rem;
+    font-size: 1.25rem;
+  }
+}
+
+/* Section Styles */
+@layer components {
+  .section {
+    padding: var(--spacing-section) 1.5rem;
+    position: relative;
+  }
+
+  .section-sm {
+    padding: var(--spacing-section-sm) 1.5rem;
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .section-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(to right, var(--gold-primary), var(--burgundy-primary));
+    margin: 1.5rem auto 0;
+    border-radius: 2px;
+  }
+
+  .section-content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Card Styles */
+  .card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    box-shadow: 0 4px 20px var(--shadow-md);
+    border: 1px solid var(--border-light);
+    transition: all var(--transition-base);
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px var(--shadow-lg);
+    border-color: var(--border-gold);
+  }
+
+  .card-premium {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.98) 100%);
+    border: 2px solid var(--border-gold);
+    box-shadow: 0 6px 25px var(--shadow-gold);
+  }
+
+  /* Divider Styles */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border-gold), transparent);
+    margin: 2rem 0;
+    border: none;
+  }
+
+  .divider-thick {
+    height: 3px;
+    background: linear-gradient(to right, var(--gold-primary), var(--burgundy-primary), var(--gold-primary));
+    margin: 3rem 0;
+    border: none;
+    border-radius: 2px;
+  }
+}
+
+/* Utility Classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Text Color Utilities */
+  .text-primary-color {
+    color: var(--text-primary);
+  }
+
+  .text-secondary-color {
+    color: var(--text-secondary);
+  }
+
+  .text-muted-color {
+    color: var(--text-muted);
+  }
+
+  .text-gold {
+    color: var(--gold-logo);
+  }
+  
+  .text-logo-gold {
+    color: var(--gold-logo);
+  }
+
+  .text-burgundy {
+    color: var(--burgundy-primary);
+  }
+
+  .text-olive {
+    color: var(--olive-green);
+  }
+
+  /* Background Color Utilities */
+  .bg-primary {
+    background-color: var(--primary);
+  }
+
+  .bg-primary-light {
+    background-color: var(--primary-light);
+  }
+
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+
+  .bg-accent {
+    background-color: var(--accent);
+  }
+
+  .bg-cream {
+    background-color: var(--cream-background);
+  }
+
+  /* Border Utilities */
+  .border-default {
+    border-color: var(--border-default);
+  }
+
+  .border-light {
+    border-color: var(--border-light);
+  }
+
+  .border-gold {
+    border-color: var(--border-gold);
+  }
+
+  /* Premium Effects */
+  .shadow-premium {
+    box-shadow: 0 8px 30px var(--shadow-gold);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--gold-primary), var(--burgundy-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gold-accent {
+    border-left: 4px solid var(--gold-primary);
+    padding-left: 1rem;
+  }
+
+  /* Animation Utilities */
+  .hover-zoom {
+    transition: transform 300ms ease;
+  }
+
+  .hover-zoom:hover {
+    transform: scale(1.05);
+  }
+
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+
+  .gold-glow:hover {
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+  }
+
+  /* Smooth Scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Fade In Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  /* Slide Up Animation */
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.8s ease-out;
+  }
+
+  /* Gradient Gold Border */
+  .gradient-gold-border {
+    position: relative;
+  }
+
+  .gradient-gold-border::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+}
+
+/* Mobile Booking Widget */
+@media (max-width: 1024px) {
+  .booking-widget-mobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    background: var(--darkGreen);
+    border-top: 2px solid var(--gold);
+    padding: 1rem;
+  }
+}
+
+.bg-catering {
+  background-image: url("/bck-img.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Hide Next.js branding elements */
+[data-nextjs-toast],
+[data-nextjs-dialog],
+.__nextjs-toast,
+.__nextjs-dialog,
+#__nextjs-toast,
+#__nextjs-dialog,
+.nextjs-toast,
+.nextjs-dialog {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}/* Hide any Next.js watermark or badge */
+a[href*="nextjs.org"],
+a[href*="vercel.com"] {
+  display: none !important;
+}/* Additional Next.js branding hiding rules */
+button[aria-label*='Next.js'],
+button[aria-label*='Vercel'],
+div[class*='nextjs'],
+div[class*='vercel'],
+span[class*='nextjs'],
+span[class*='vercel'],
+#__nextjs-dev-indicator,
+.__nextjs-dev-indicator,
+[data-nextjs-dev-indicator] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
