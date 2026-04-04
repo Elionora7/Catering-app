@@ -37,7 +37,6 @@ export async function POST(request: Request) {
       baseTotal,
       paymentSchedule,
       finalBalanceDueDate,
-      allergiesNote,
       stripeFee,
     } = body
 
@@ -88,7 +87,6 @@ export async function POST(request: Request) {
       state,
       postcode,
       paymentMethod: pm,
-      allergiesNote,
       stripeFee: Number(stripeFee ?? 0),
       depositAmount: Number(depositAmount ?? 0),
       remainingAmount: Number(remainingAmount ?? 0),

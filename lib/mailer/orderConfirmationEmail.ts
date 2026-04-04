@@ -1,4 +1,8 @@
-import { createSmtpTransport, sendMailWithLogging } from '@/lib/mailer/createSmtpTransport'
+import {
+  createSmtpTransport,
+  getSmtpEnvelopeFrom,
+  sendMailWithLogging,
+} from '@/lib/mailer/createSmtpTransport'
 import { FOOD_WARMER_OPTION_DESCRIPTION } from '@/lib/foodWarmerCopy'
 
 export type OrderConfirmationLineItem = {
@@ -31,7 +35,6 @@ export type OrderConfirmationPayload = {
   state?: string
   postcode?: string
   paymentMethod: 'STRIPE' | 'BANK_TRANSFER'
-  allergiesNote?: string | null
   stripeFee?: number
   depositAmount: number
   remainingAmount: number
@@ -379,6 +382,7 @@ export async function sendOrderConfirmationMails(
     console.log(
       `[orderConfirmationEmail] Sending customer confirmation → ${to} (order ${payload.orderId})`
     )
+    const envelope = getSmtpEnvelopeFrom()
     const info = await sendMailWithLogging(transport, {
       from,
       to,
@@ -386,6 +390,7 @@ export async function sendOrderConfirmationMails(
       subject: `Order Confirmation${payload.orderId ? ` — ${payload.orderId}` : ''}`,
       text,
       html,
+      ...(envelope ? { envelope } : {}),
     })
     customerSent = true
     console.log(`[orderConfirmationEmail] Email sent successfully for order ${payload.orderId} → ${to}`, {

@@ -497,7 +497,6 @@ export async function POST(request: Request) {
       state: validatedData.state,
       postcode: validatedData.postcode,
       paymentMethod: order.paymentMethod as 'STRIPE' | 'BANK_TRANSFER',
-      allergiesNote,
       stripeFee,
       depositAmount: order.depositAmount,
       remainingAmount: order.remainingAmount,
@@ -575,7 +574,6 @@ export async function POST(request: Request) {
         paymentMethod,
         paymentStatusLabel: internalPaymentStatusLabel,
         orderStatus: String(order.status),
-        allergiesNote,
       })
     } catch (internalErr) {
       console.error(`[orders] Internal order notification error (non-fatal) for order ${order.id}`, internalErr)

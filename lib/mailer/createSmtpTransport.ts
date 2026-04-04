@@ -29,6 +29,16 @@ export function createSmtpTransport(): nodemailer.Transporter | null {
   })
 }
 
+/**
+ * Many SMTP hosts require the envelope MAIL FROM to match the authenticated mailbox.
+ * Without this, same-domain "To" can work while external addresses (e.g. Gmail) are deferred or rejected.
+ */
+export function getSmtpEnvelopeFrom(): { from: string } | undefined {
+  const u = process.env.SMTP_USER?.trim()
+  if (!u || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u)) return undefined
+  return { from: u }
+}
+
 /** Sends mail with consistent [mailer] logs; rethrows on failure. */
 export async function sendMailWithLogging(
   transporter: nodemailer.Transporter,
