@@ -566,9 +566,14 @@ export async function POST(request: Request) {
       )
     }
 
-    console.error('Error creating order:', error)
+    const errMsg = error instanceof Error ? error.message : String(error)
+    console.error('Error creating order:', errMsg, error)
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      {
+        error: 'Failed to create order',
+        // Helps debug production (Vercel logs show full error); safe to omit in client UX
+        ...(process.env.NODE_ENV === 'development' && { debug: errMsg }),
+      },
       { status: 500 }
     )
   }
