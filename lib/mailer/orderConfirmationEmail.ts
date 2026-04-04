@@ -326,6 +326,24 @@ export function buildOrderConfirmationHtml(p: OrderConfirmationPayload): string 
 
 export type OrderEmailDispatchStatus = 'SENT' | 'FAILED' | 'SKIPPED_NO_SMTP'
 
+/** Plain-text part improves deliverability vs HTML-only (quote emails already send both). */
+function buildOrderConfirmationPlainText(p: OrderConfirmationPayload): string {
+  const lines = [
+    `Order confirmation — ${p.orderId}`,
+    '',
+    `Hi ${p.name},`,
+    '',
+    `Order total: ${formatCurrency(p.totalAmount)}`,
+    `Type: ${p.orderType === 'STANDARD' ? 'Standard catering' : 'Event catering'}`,
+    `Delivery: ${String(p.deliveryType).toUpperCase() === 'DELIVERY' ? 'Delivery' : 'Pickup'}`,
+    '',
+    'Thank you for choosing Eliora Signature Catering.',
+    '',
+    '— Eliora Signature Catering',
+  ]
+  return lines.join('\n')
+}
+
 /**
  * Sends customer confirmation only. Internal business alerts use `sendInternalOrderNotification`.
  * Does not throw — logs errors. Customer send determines SENT vs FAILED.
@@ -333,34 +351,54 @@ export type OrderEmailDispatchStatus = 'SENT' | 'FAILED' | 'SKIPPED_NO_SMTP'
 export async function sendOrderConfirmationMails(
   payload: OrderConfirmationPayload
 ): Promise<OrderEmailDispatchStatus> {
+  const to = String(payload.email || '').trim()
+  if (!to) {
+    console.warn('[orderConfirmationEmail] No customer email on payload; skipping send', {
+      orderId: payload.orderId,
+    })
+    return 'FAILED'
+  }
+
   const html = buildOrderConfirmationHtml(payload)
+  const text = buildOrderConfirmationPlainText(payload)
   const transport = createSmtpTransport()
   const from =
     process.env.EMAIL_FROM ||
     process.env.SMTP_FROM ||
     (process.env.SMTP_USER ? `Eliora Orders <${process.env.SMTP_USER}>` : undefined)
 
+  const replyTo =
+    process.env.QUOTE_NOTIFY_EMAIL?.trim() ||
+    process.env.BUSINESS_EMAIL?.trim() ||
+    process.env.SMTP_USER?.trim() ||
+    undefined
+
   if (!transport || !from) {
     console.warn(
       '[orderConfirmationEmail] SMTP not configured (need SMTP_HOST and EMAIL_FROM/SMTP_FROM or SMTP_USER). Preview only.'
     )
-    console.log('[orderConfirmationEmail] Would send to:', payload.email)
+    console.log('[orderConfirmationEmail] Would send to:', to)
     console.log('[orderConfirmationEmail] Order:', payload.orderId, 'total:', payload.totalAmount)
     return 'SKIPPED_NO_SMTP'
   }
 
   let customerSent = false
   try {
+    console.log(
+      `[orderConfirmationEmail] Sending customer confirmation → ${to} (order ${payload.orderId})`
+    )
     await sendMailWithLogging(transport, {
       from,
-      to: payload.email,
+      to,
+      replyTo,
       subject: `Order Confirmation${payload.orderId ? ` — ${payload.orderId}` : ''}`,
+      text,
       html,
     })
     customerSent = true
-    console.log(`[orderConfirmationEmail] Email sent successfully for order ${payload.orderId}`)
+    console.log(`[orderConfirmationEmail] Email sent successfully for order ${payload.orderId} → ${to}`)
   } catch (error) {
-    console.error(`[orderConfirmationEmail] Email FAILED for order ${payload.orderId}`, error)
+    console.error(`[orderConfirmationEmail] Email FAILED for order ${payload.orderId} → ${to}`, error)
   }
 
   return customerSent ? 'SENT' : 'FAILED'
