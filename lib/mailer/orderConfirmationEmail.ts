@@ -239,13 +239,6 @@ export function buildOrderConfirmationHtml(p: OrderConfirmationPayload): string 
                         }
                       </p>
 
-                      <h3 style="color:#0F3D3E;margin:22px 0 10px;font-size:17px;border-left:4px solid #D4AF37;padding-left:10px;">Allergen disclaimer</h3>
-                      <p style="margin:0;font-size:14px;color:#0F3D3E;line-height:1.6;">${
-                        p.allergiesNote && String(p.allergiesNote).trim()
-                          ? escapeHtml(String(p.allergiesNote))
-                          : 'Customer confirmed the allergen disclaimer at checkout. We do not cater for allergy requests.'
-                      }</p>
-
                       <h3 style="color:#0F3D3E;margin:22px 0 10px;font-size:17px;border-left:4px solid #D4AF37;padding-left:10px;">Payment Summary</h3>
                       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;color:#0F3D3E;">
                         <tbody>
@@ -303,8 +296,7 @@ export function buildOrderConfirmationHtml(p: OrderConfirmationPayload): string 
                           <td style="padding:18px 0 0;border-top:1px solid rgba(15,61,62,0.12);">
                             <p style="margin:0 0 8px;color:#0F3D3E;">Thank you for choosing Eliora Signature Catering.</p>
                             <p style="margin:0 0 8px;font-size:13px;color:#0F3D3E;">Final payment reminders will be sent prior to your event date.</p>
-                            <p style="margin:0 0 10px;font-size:13px;color:#0F3D3E;">For enquiries, contact us at ${escapeHtml(businessDetails.email)} or ${escapeHtml(businessDetails.phone)}.</p>
-                            <p style="margin:0;font-size:12px;color:rgba(15,61,62,0.75);">Our kitchen handles common allergens; we cannot guarantee allergen-free products and do not cater for allergy requests. See the allergen disclaimer accepted at checkout.</p>
+                            <p style="margin:0;font-size:13px;color:#0F3D3E;">For enquiries, contact us at ${escapeHtml(businessDetails.email)} or ${escapeHtml(businessDetails.phone)}.</p>
                           </td>
                         </tr>
                       </table>
