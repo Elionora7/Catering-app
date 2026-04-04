@@ -40,7 +40,7 @@ export type InternalOrderNotificationPayload = {
   /** Short label for ops: Paid / Deposit / Pending */
   paymentStatusLabel: string
   orderStatus: string
-  /** Allergies / dietary requirements as entered at checkout */
+  /** Optional legacy note; checkout no longer collects free-text allergies */
   allergiesNote?: string | null
 }
 
@@ -119,8 +119,10 @@ export function buildInternalOrderNotificationHtml(p: InternalOrderNotificationP
     <tr><td style="padding:4px 12px 4px 0;"><strong>${p.deliveryType === 'PICKUP' ? 'Pickup' : 'Delivery'} date</strong></td><td>${escapeHtml(formatDate(p.deliveryDate))}</td></tr>
     ${p.deliveryTime ? `<tr><td style="padding:4px 12px 4px 0;"><strong>Time</strong></td><td>${escapeHtml(p.deliveryTime)}</td></tr>` : ''}
     <tr><td style="padding:4px 12px 4px 0;vertical-align:top;"><strong>Address</strong></td><td>${escapeHtml(p.deliveryAddressDisplay)}</td></tr>
-    <tr><td style="padding:4px 12px 4px 0;vertical-align:top;"><strong>Allergies / dietary</strong></td><td>${escapeHtml(
-      p.allergiesNote && String(p.allergiesNote).trim() ? String(p.allergiesNote).trim() : 'None provided'
+    <tr><td style="padding:4px 12px 4px 0;vertical-align:top;"><strong>Allergen note</strong></td><td>${escapeHtml(
+      p.allergiesNote && String(p.allergiesNote).trim()
+        ? String(p.allergiesNote).trim()
+        : 'Disclaimer accepted at checkout (no allergy requests)'
     )}</td></tr>
     <tr><td style="padding:4px 12px 4px 0;"><strong>Payment method</strong></td><td>${p.paymentMethod === 'STRIPE' ? 'Stripe' : 'Bank transfer'}</td></tr>
     <tr><td style="padding:4px 12px 4px 0;"><strong>Payment status</strong></td><td>${escapeHtml(p.paymentStatusLabel)}</td></tr>
@@ -152,8 +154,10 @@ function buildInternalOrderNotificationText(p: InternalOrderNotificationPayload)
     `${p.deliveryType === 'PICKUP' ? 'Pickup' : 'Delivery'} date: ${formatDate(p.deliveryDate)}`,
     p.deliveryTime ? `Time: ${p.deliveryTime}` : null,
     `Address: ${p.deliveryAddressDisplay}`,
-    `Allergies / dietary: ${
-      p.allergiesNote && String(p.allergiesNote).trim() ? String(p.allergiesNote).trim() : 'None provided'
+    `Allergen note: ${
+      p.allergiesNote && String(p.allergiesNote).trim()
+        ? String(p.allergiesNote).trim()
+        : 'Disclaimer accepted at checkout (no allergy requests)'
     }`,
     `Payment: ${p.paymentMethod === 'STRIPE' ? 'Stripe' : 'Bank transfer'} — ${p.paymentStatusLabel}`,
     `Total: ${formatMoney(p.totalAmount)}`,

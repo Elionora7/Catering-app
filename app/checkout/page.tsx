@@ -90,7 +90,6 @@ function CheckoutPageContent() {
     name: '',
     paymentMethod: 'stripe' as 'stripe' | 'bank_transfer',
     cardholderName: '',
-    allergiesNote: '',
   })
   const [allergyConsentAcknowledged, setAllergyConsentAcknowledged] = useState(false)
   const [allergyConsentError, setAllergyConsentError] = useState('')
@@ -590,7 +589,6 @@ function CheckoutPageContent() {
         deliveryType: formData.deliveryType.toUpperCase(),
         email: formData.email.trim(),
         name: formData.name.trim(),
-        allergiesNote: formData.allergiesNote.trim() || undefined,
         stripeFee: formData.paymentMethod === 'stripe' ? stripeFee : 0,
         totalAmount: formData.paymentMethod === 'stripe' ? finalTotal : total,
       }
@@ -1950,12 +1948,28 @@ function CheckoutPageContent() {
                         </p>
                       )}
                     </div>
-                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 sm:p-5">
-                    <p className="text-sm text-amber-900">
-                      Our kitchen handles common allergens including nuts, dairy, gluten, eggs, and sesame. While we
-                      take care, we cannot guarantee that any item is completely free from traces of allergens.
+                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 sm:p-5 space-y-3">
+                    <h3 className="text-base font-semibold text-amber-950">Allergen Disclaimer</h3>
+                    <p className="text-sm text-amber-900 leading-relaxed">
+                      Eliora Signature Catering Pty Ltd prepares food in a kitchen that handles common allergens,
+                      including nuts, dairy, gluten, eggs, seafood, sesame, and soy.
                     </p>
-                    <label className="mt-3 flex items-start gap-2 text-sm font-medium text-amber-900">
+                    <p className="text-sm text-amber-900 leading-relaxed">
+                      We take care in food preparation but cannot guarantee products are allergen-free. We do not cater
+                      for allergy requests.
+                    </p>
+                    <p className="text-sm font-medium text-amber-950">By ordering, you acknowledge that:</p>
+                    <ul className="text-sm text-amber-900 list-disc pl-5 space-y-1 leading-relaxed">
+                      <li>
+                        Cross-contamination may occur, and Eliora Signature Catering Pty Ltd is not liable for allergic
+                        reactions.
+                      </li>
+                      <li>For events, it is your responsibility to inform guests of this disclaimer.</li>
+                    </ul>
+                    <p className="text-sm text-amber-900 leading-relaxed">
+                      By ticking the acceptance box, you confirm you have read, understood, and agreed to this disclaimer.
+                    </p>
+                    <label className="mt-2 flex items-start gap-2 text-sm font-medium text-amber-900">
                       <input
                         type="checkbox"
                         checked={allergyConsentAcknowledged}
@@ -1965,35 +1979,13 @@ function CheckoutPageContent() {
                             setAllergyConsentError('')
                           }
                         }}
-                        className="mt-0.5 h-4 w-4 rounded border-amber-400 text-[#D4AF37] focus:ring-[#D4AF37]"
+                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-amber-400 text-[#D4AF37] focus:ring-[#D4AF37]"
                       />
-                      <span>I acknowledge the allergy notice and accept the risk.</span>
+                      <span>I confirm I have read, understood, and agreed to the allergen disclaimer above.</span>
                     </label>
                     {allergyConsentError && (
                       <p className="mt-2 text-sm text-red-700">{allergyConsentError}</p>
                     )}
-                    <div className="mt-4">
-                      <label
-                        htmlFor="allergiesNote"
-                        className="block text-sm font-medium text-amber-900 mb-2"
-                      >
-                        Allergies or dietary requirements (optional)
-                      </label>
-                      <textarea
-                        id="allergiesNote"
-                        value={formData.allergiesNote}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            allergiesNote: e.target.value,
-                          }))
-                        }
-                        rows={3}
-                        maxLength={2000}
-                        className="w-full border border-amber-300 rounded-md px-3 py-2 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
-                        placeholder="Tell us about food allergies or dietary requirements."
-                      />
-                    </div>
                   </div>
                   <div className="space-y-4">
                     {/* Payment method selector */}
