@@ -1,4 +1,4 @@
-import { NextResponse, after } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { shouldChargeBainMarieServiceFee } from '@/lib/dipTrayCombo'
 import { prisma } from '@/lib/prisma'
@@ -23,6 +23,9 @@ import { getMealMinimumQuantity } from '@/lib/categoryMinimums'
 import { formatOrderItemDisplayName } from '@/lib/foodWarmerCopy'
 import { ZodError } from 'zod'
 import bcrypt from 'bcryptjs'
+
+/** Allow time for in-request SMTP (Vercel caps by plan; Pro+ can use 60). */
+export const maxDuration = 60
 
 export async function GET(request: Request) {
   try {
@@ -499,63 +502,68 @@ export async function POST(request: Request) {
     const internalPaymentStatusLabel =
       paymentMethod === 'STRIPE' ? 'Paid' : bankPartialDeposit ? 'Deposit' : 'Pending'
 
-    // Customer confirmation + internal business notification (background — does not block JSON response).
-    after(async () => {
-      if (customerEmail && customerName) {
-        let emailStatus: 'SENT' | 'FAILED' = 'FAILED'
-        try {
-          const dispatch = await sendOrderConfirmationMails(emailPayload)
-          emailStatus = dispatch === 'SENT' ? 'SENT' : 'FAILED'
-        } catch (emailErr) {
-          console.error(`[orders] Unexpected error in confirmation email for order ${order.id}`, emailErr)
-          emailStatus = 'FAILED'
-        }
-        try {
-          await prisma.order.update({
-            where: { id: order.id },
-            data: { emailStatus },
-          })
-        } catch (updateErr) {
-          console.error(`[orders] Failed to persist emailStatus for order ${order.id}`, updateErr)
-        }
-      } else {
-        console.warn('[orders] No customer email/name on order; skipping customer confirmation email', {
-          orderId: order.id,
-        })
-      }
-
+    // Await email work in the same request (do not use next/server `after()` here).
+    // On Vercel serverless, work scheduled in `after()` can be cut off when the isolate freezes
+    // after the response is sent — customer confirmation then never sends reliably.
+    if (customerEmail && customerName) {
+      let emailStatus: 'SENT' | 'FAILED' = 'FAILED'
       try {
-        await sendInternalOrderNotification({
-          orderId: order.id,
-          customerName: validatedData.name?.trim() || 'Not provided',
-          customerEmail: validatedData.email?.trim() || '',
-          customerPhone: validatedData.phoneNumber?.trim(),
-          deliveryDate: order.deliveryDate,
-          deliveryTime: validatedData.deliveryTime,
-          deliveryType: validatedData.deliveryType,
-          deliveryAddressDisplay: buildDeliveryAddressForInternalNotification(validatedData.deliveryType, {
-            unitNumber: validatedData.unitNumber,
-            streetAddress: validatedData.streetAddress,
-            suburb: validatedData.suburb,
-            state: validatedData.state,
-            postcode: validatedData.postcode,
-          }),
-          items: order.items.map((oi) => ({
-            name: formatOrderItemDisplayName(oi.meal, oi.size),
-            quantity: oi.quantity,
-            unitPrice: Number(oi.price),
-            lineTotal: Number(oi.price) * oi.quantity,
-          })),
-          totalAmount: Number(order.totalAmount),
-          paymentMethod,
-          paymentStatusLabel: internalPaymentStatusLabel,
-          orderStatus: String(order.status),
-          allergiesNote,
-        })
-      } catch (internalErr) {
-        console.error(`[orders] Internal order notification error (non-fatal) for order ${order.id}`, internalErr)
+        const dispatch = await sendOrderConfirmationMails(emailPayload)
+        emailStatus = dispatch === 'SENT' ? 'SENT' : 'FAILED'
+        if (dispatch === 'SKIPPED_NO_SMTP') {
+          console.warn(
+            `[orders] Order ${order.id}: confirmation email skipped — set SMTP_HOST, SMTP_USER, SMTP_PASS on Vercel`
+          )
+        }
+      } catch (emailErr) {
+        console.error(`[orders] Unexpected error in confirmation email for order ${order.id}`, emailErr)
+        emailStatus = 'FAILED'
       }
-    })
+      try {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { emailStatus },
+        })
+      } catch (updateErr) {
+        console.error(`[orders] Failed to persist emailStatus for order ${order.id}`, updateErr)
+      }
+    } else {
+      console.warn('[orders] No customer email/name on order; skipping customer confirmation email', {
+        orderId: order.id,
+      })
+    }
+
+    try {
+      await sendInternalOrderNotification({
+        orderId: order.id,
+        customerName: validatedData.name?.trim() || 'Not provided',
+        customerEmail: validatedData.email?.trim() || '',
+        customerPhone: validatedData.phoneNumber?.trim(),
+        deliveryDate: order.deliveryDate,
+        deliveryTime: validatedData.deliveryTime,
+        deliveryType: validatedData.deliveryType,
+        deliveryAddressDisplay: buildDeliveryAddressForInternalNotification(validatedData.deliveryType, {
+          unitNumber: validatedData.unitNumber,
+          streetAddress: validatedData.streetAddress,
+          suburb: validatedData.suburb,
+          state: validatedData.state,
+          postcode: validatedData.postcode,
+        }),
+        items: order.items.map((oi) => ({
+          name: formatOrderItemDisplayName(oi.meal, oi.size),
+          quantity: oi.quantity,
+          unitPrice: Number(oi.price),
+          lineTotal: Number(oi.price) * oi.quantity,
+        })),
+        totalAmount: Number(order.totalAmount),
+        paymentMethod,
+        paymentStatusLabel: internalPaymentStatusLabel,
+        orderStatus: String(order.status),
+        allergiesNote,
+      })
+    } catch (internalErr) {
+      console.error(`[orders] Internal order notification error (non-fatal) for order ${order.id}`, internalErr)
+    }
 
     return NextResponse.json(order, { status: 201 })
   } catch (error) {
