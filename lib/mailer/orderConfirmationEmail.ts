@@ -379,7 +379,7 @@ export async function sendOrderConfirmationMails(
     console.log(
       `[orderConfirmationEmail] Sending customer confirmation → ${to} (order ${payload.orderId})`
     )
-    await sendMailWithLogging(transport, {
+    const info = await sendMailWithLogging(transport, {
       from,
       to,
       replyTo,
@@ -388,7 +388,11 @@ export async function sendOrderConfirmationMails(
       html,
     })
     customerSent = true
-    console.log(`[orderConfirmationEmail] Email sent successfully for order ${payload.orderId} → ${to}`)
+    console.log(`[orderConfirmationEmail] Email sent successfully for order ${payload.orderId} → ${to}`, {
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+    })
   } catch (error) {
     console.error(`[orderConfirmationEmail] Email FAILED for order ${payload.orderId} → ${to}`, error)
   }

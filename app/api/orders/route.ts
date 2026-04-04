@@ -456,20 +456,28 @@ export async function POST(request: Request) {
       bankPartialDeposit,
     })
 
-    const customerEmail = validatedData.email?.trim()
-    const customerName = validatedData.name?.trim()
+    // Customer confirmation uses the email from the request body, not env vars.
+    // Fallback to the linked User row when the client omits email/name (e.g. some logged-in flows).
+    const customerEmail =
+      validatedData.email?.trim() || order.user?.email?.trim() || ''
+    const customerName = (() => {
+      const fromBody = validatedData.name?.trim()
+      if (fromBody) return fromBody
+      const fromUser = order.user?.name
+      return fromUser != null && String(fromUser).trim() ? String(fromUser).trim() : ''
+    })()
 
     console.log('[orders] New order created:', {
       orderId: order.id,
-      customerEmail: customerEmail ?? order.user?.email ?? null,
+      customerEmail,
       totalAmount: order.totalAmount,
       paymentMethod: order.paymentMethod,
     })
 
     const emailPayload = {
       orderId: order.id,
-      email: customerEmail ?? '',
-      name: customerName ?? '',
+      email: customerEmail,
+      name: customerName,
       phoneNumber: validatedData.phoneNumber?.trim(),
       items: order.items.map((oi) => ({
         name: formatOrderItemDisplayName(oi.meal, oi.size),
@@ -506,6 +514,7 @@ export async function POST(request: Request) {
     // On Vercel serverless, work scheduled in `after()` can be cut off when the isolate freezes
     // after the response is sent — customer confirmation then never sends reliably.
     if (customerEmail && customerName) {
+      console.log('[orders] Sending customer confirmation to:', customerEmail, '(order', order.id + ')')
       let emailStatus: 'SENT' | 'FAILED' = 'FAILED'
       try {
         const dispatch = await sendOrderConfirmationMails(emailPayload)
@@ -528,9 +537,16 @@ export async function POST(request: Request) {
         console.error(`[orders] Failed to persist emailStatus for order ${order.id}`, updateErr)
       }
     } else {
-      console.warn('[orders] No customer email/name on order; skipping customer confirmation email', {
-        orderId: order.id,
-      })
+      console.warn(
+        '[orders] No customer email/name resolved (body + user fallback); skipping customer confirmation email',
+        {
+          orderId: order.id,
+          bodyEmail: validatedData.email?.trim() || null,
+          userEmail: order.user?.email || null,
+          bodyName: validatedData.name?.trim() || null,
+          userName: order.user?.name || null,
+        }
+      )
     }
 
     try {
