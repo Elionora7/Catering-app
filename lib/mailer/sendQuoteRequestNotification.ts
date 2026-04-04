@@ -1,6 +1,10 @@
 import type { QuoteRequest } from '@prisma/client'
 import { FOOD_WARMER_OPTION_LABEL } from '@/lib/foodWarmerCopy'
-import { createSmtpTransport, sendMailWithLogging } from '@/lib/mailer/createSmtpTransport'
+import {
+  createSmtpTransport,
+  resolveMailFromHeader,
+  sendMailWithLogging,
+} from '@/lib/mailer/createSmtpTransport'
 
 /** Matches persisted `cartItems` JSON from quote API */
 export type QuoteCartLine = {
@@ -252,10 +256,7 @@ const DEFAULT_QUOTE_NOTIFY_EMAIL = 'info@eliorasignaturecatering.com.au'
 export async function sendQuoteRequestNotification(quote: QuoteRequest): Promise<void> {
   const transport = createSmtpTransport()
   const to = process.env.QUOTE_NOTIFY_EMAIL || DEFAULT_QUOTE_NOTIFY_EMAIL
-  const from =
-    process.env.EMAIL_FROM ||
-    process.env.SMTP_FROM ||
-    (process.env.SMTP_USER ? `Quotes <${process.env.SMTP_USER}>` : undefined)
+  const from = resolveMailFromHeader({ fallbackDisplayName: 'Quotes' })
 
   const { text, html } = buildBodies(quote)
 

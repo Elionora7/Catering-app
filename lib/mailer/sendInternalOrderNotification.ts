@@ -1,6 +1,7 @@
 import {
   createSmtpTransport,
   getSmtpEnvelopeFrom,
+  resolveMailFromHeader,
   sendMailWithLogging,
 } from '@/lib/mailer/createSmtpTransport'
 import { getPickupLocationDisplayFromEnv } from '@/lib/mailer/orderConfirmationEmail'
@@ -177,10 +178,7 @@ export async function sendInternalOrderNotification(payload: InternalOrderNotifi
   }
 
   const transport = createSmtpTransport()
-  const from =
-    process.env.EMAIL_FROM ||
-    process.env.SMTP_FROM ||
-    (process.env.SMTP_USER ? `Eliora Orders <${process.env.SMTP_USER}>` : undefined)
+  const from = resolveMailFromHeader({ fallbackDisplayName: 'Eliora Orders' })
 
   if (!transport || !from) {
     console.warn('[internalOrderNotification] SMTP not configured; skipping internal notification')

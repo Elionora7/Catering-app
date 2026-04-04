@@ -1,6 +1,7 @@
 import {
   createSmtpTransport,
   getSmtpEnvelopeFrom,
+  resolveMailFromHeader,
   sendMailWithLogging,
 } from '@/lib/mailer/createSmtpTransport'
 import { FOOD_WARMER_OPTION_DESCRIPTION } from '@/lib/foodWarmerCopy'
@@ -357,10 +358,7 @@ export async function sendOrderConfirmationMails(
   const html = buildOrderConfirmationHtml(payload)
   const text = buildOrderConfirmationPlainText(payload)
   const transport = createSmtpTransport()
-  const from =
-    process.env.EMAIL_FROM ||
-    process.env.SMTP_FROM ||
-    (process.env.SMTP_USER ? `Eliora Orders <${process.env.SMTP_USER}>` : undefined)
+  const from = resolveMailFromHeader({ fallbackDisplayName: 'Eliora Orders' })
 
   const replyTo =
     process.env.QUOTE_NOTIFY_EMAIL?.trim() ||
