@@ -473,8 +473,7 @@ async function main() {
       mealType: 'BOTH' as const,
       minimumQuantity: 12,
       isVegetarian: false,
-      // Use real filenames (Linux/Vercel paths are case-sensitive; not finger-food-kebbe.png)
-      imageUrl: '/menu-images/kibbeh-dozen.png',
+      imageUrl: '/menu-images/finger-food-Kebbe.png',
     },
     {
       name: 'Mini Falafel Cup (2 pieces)',
@@ -486,7 +485,7 @@ async function main() {
       minimumQuantity: 12,
       isVegetarian: true,
       isVegan: true,
-      imageUrl: '/menu-images/falafel.png',
+      imageUrl: '/menu-images/finger-food-Kebbe.png',
     },
     {
       name: 'Vine Leaves Cup (2 pieces - Vegetarian)',
@@ -497,7 +496,7 @@ async function main() {
       mealType: 'BOTH' as const,
       minimumQuantity: 12,
       isVegetarian: true,
-      imageUrl: '/menu-images/vg-vine_leaves.png',
+      imageUrl: '/menu-images/finger-food-veg-vine.jpeg',
     },
     {
       name: 'Mixed Pastry Cup (3 items)',
