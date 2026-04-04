@@ -1,7 +1,6 @@
 import { NextResponse, after } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { shouldChargeBainMarieServiceFee } from '@/lib/dipTrayCombo'
-import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { findActiveDeliveryZone } from '@/lib/deliveryZoneLookup'
 import { requireAuth } from '@/lib/auth-helpers'
@@ -514,7 +513,7 @@ export async function POST(request: Request) {
         try {
           await prisma.order.update({
             where: { id: order.id },
-            data: { emailStatus } as Prisma.OrderUpdateInput,
+            data: { emailStatus },
           })
         } catch (updateErr) {
           console.error(`[orders] Failed to persist emailStatus for order ${order.id}`, updateErr)
