@@ -1316,6 +1316,8 @@ async function main() {
   // Core nearby delivery zone
   const zone1Postcodes = [
     { postcode: '2196', suburb: 'Punchbowl' },
+    // Same postcode as Punchbowl (2196) — customers often enter Roselands + 2196
+    { postcode: '2196', suburb: 'Roselands' },
     { postcode: '2134', suburb: 'Burwood' },
     { postcode: '2135', suburb: 'Strathfield' },
     { postcode: '2137', suburb: 'Concord West' },
@@ -1361,7 +1363,6 @@ async function main() {
     { postcode: '2193', suburb: 'Canterbury' },
     { postcode: '2194', suburb: 'Earlwood' },
     { postcode: '2195', suburb: 'Bardwell Park' },
-    { postcode: '2197', suburb: 'Roselands' },
     { postcode: '2212', suburb: 'Revesby' },
   ]
 
