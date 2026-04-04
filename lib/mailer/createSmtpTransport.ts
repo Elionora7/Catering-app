@@ -63,13 +63,17 @@ export function resolveMailFromHeader(options?: { fallbackDisplayName?: string }
 }
 
 /**
- * Many SMTP hosts require the envelope MAIL FROM to match the authenticated mailbox.
- * Without this, same-domain "To" can work while external addresses (e.g. Gmail) are deferred or rejected.
+ * SMTP envelope MAIL FROM + RCPT TO. Must include **both** `from` and `to`; nodemailer does not merge a
+ * partial `envelope` with top-level `to` — `{ from }` alone causes EENVELOPE "No recipients defined".
  */
-export function getSmtpEnvelopeFrom(): { from: string } | undefined {
+export function buildSmtpEnvelope(mailTo: string | string[]): { from: string; to: string[] } | undefined {
   const u = process.env.SMTP_USER?.trim()
   if (!u || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u)) return undefined
-  return { from: u }
+  const list = (Array.isArray(mailTo) ? mailTo : [mailTo])
+    .map((a) => String(a).trim())
+    .filter(Boolean)
+  if (list.length === 0) return undefined
+  return { from: u, to: list }
 }
 
 /** Sends mail with consistent [mailer] logs; rethrows on failure. */

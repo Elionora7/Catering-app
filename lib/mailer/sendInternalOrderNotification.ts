@@ -1,6 +1,6 @@
 import {
   createSmtpTransport,
-  getSmtpEnvelopeFrom,
+  buildSmtpEnvelope,
   resolveMailFromHeader,
   sendMailWithLogging,
 } from '@/lib/mailer/createSmtpTransport'
@@ -190,7 +190,7 @@ export async function sendInternalOrderNotification(payload: InternalOrderNotifi
   const text = buildInternalOrderNotificationText(payload)
   const subject = `New Catering Order Received - #${payload.orderId}`
 
-  const envelope = getSmtpEnvelopeFrom()
+  const envelope = buildSmtpEnvelope(recipients)
   try {
     await sendMailWithLogging(transport, {
       from,

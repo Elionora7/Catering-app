@@ -1,6 +1,6 @@
 import {
   createSmtpTransport,
-  getSmtpEnvelopeFrom,
+  buildSmtpEnvelope,
   resolveMailFromHeader,
   sendMailWithLogging,
 } from '@/lib/mailer/createSmtpTransport'
@@ -380,7 +380,7 @@ export async function sendOrderConfirmationMails(
     console.log(
       `[orderConfirmationEmail] Sending customer confirmation → ${to} (order ${payload.orderId})`
     )
-    const envelope = getSmtpEnvelopeFrom()
+    const envelope = buildSmtpEnvelope(to)
     const info = await sendMailWithLogging(transport, {
       from,
       to,
