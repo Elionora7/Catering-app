@@ -28,7 +28,7 @@ const CUP_ITEMS = [
     mealType: 'BOTH' as const,
     minimumQuantity: 12,
     isVegetarian: false,
-    imageUrl: '/menu-images/finger-food-kebbe.png',
+    imageUrl: '/menu-images/kibbeh-dozen.png',
   },
   {
     name: 'Mini Falafel Cup (2 pieces)',
@@ -40,7 +40,7 @@ const CUP_ITEMS = [
     minimumQuantity: 12,
     isVegetarian: true,
     isVegan: true,
-    imageUrl: '/menu-images/finger-food-kebbe.png',
+    imageUrl: '/menu-images/falafel.png',
   },
   {
     name: 'Vine Leaves Cup (2 pieces - Vegetarian)',
@@ -51,7 +51,7 @@ const CUP_ITEMS = [
     mealType: 'BOTH' as const,
     minimumQuantity: 12,
     isVegetarian: true,
-    imageUrl: '/menu-images/finger-food-kebbe.png',
+    imageUrl: '/menu-images/vg-vine_leaves.png',
   },
   {
     name: 'Mixed Pastry Cup (3 items)',
@@ -80,19 +80,28 @@ const CUP_ITEMS = [
 
 async function main() {
   let created = 0
+  let updatedImages = 0
   let skipped = 0
 
   for (const row of CUP_ITEMS) {
     const existing = await prisma.meal.findFirst({ where: { name: row.name } })
     if (existing) {
-      skipped++
+      if (existing.imageUrl !== row.imageUrl) {
+        await prisma.meal.update({
+          where: { id: existing.id },
+          data: { imageUrl: row.imageUrl },
+        })
+        updatedImages++
+      } else {
+        skipped++
+      }
       continue
     }
     await prisma.meal.create({ data: { ...row } })
     created++
   }
 
-  console.log('Cup items:', { created, skipped, total: CUP_ITEMS.length })
+  console.log('Cup items:', { created, updatedImages, skipped, total: CUP_ITEMS.length })
 }
 
 main()
