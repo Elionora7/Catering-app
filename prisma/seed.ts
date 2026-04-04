@@ -1338,6 +1338,9 @@ async function main() {
     { postcode: '2048', suburb: 'Concord' },
     { postcode: '2049', suburb: 'Mortlake' },
     { postcode: '2050', suburb: 'North Strathfield' },
+    // Inner West (Ashfield / Croydon)
+    { postcode: '2131', suburb: 'Ashfield' },
+    { postcode: '2132', suburb: 'Croydon' },
     // South West Sydney
     { postcode: '2168', suburb: 'Liverpool' },
     { postcode: '2170', suburb: 'Fairfield' },
@@ -1355,6 +1358,7 @@ async function main() {
     { postcode: '2191', suburb: 'Belfield' },
     { postcode: '2192', suburb: 'Campsie' },
     { postcode: '2193', suburb: 'Hurlstone Park' },
+    { postcode: '2193', suburb: 'Canterbury' },
     { postcode: '2194', suburb: 'Earlwood' },
     { postcode: '2195', suburb: 'Bardwell Park' },
     { postcode: '2197', suburb: 'Roselands' },
@@ -1364,38 +1368,30 @@ async function main() {
   // Zone 3 - Far: Selected high-end suburbs beyond 30 min - $35 flat delivery fee
   // Premium locations (classy areas beyond 30 min)
   const zone3Postcodes = [
-    // Sydney CBD
+    // Sydney CBD (multiple suburb labels per postcode so customers can match how they type)
     { postcode: '2000', suburb: 'Sydney CBD (City Centre, Central, Circular Quay, The Rocks)' },
     { postcode: '2001', suburb: 'Sydney CBD (Haymarket, Chinatown)' },
+    { postcode: '2000', suburb: 'CBD' },
+    { postcode: '2000', suburb: 'Sydney' },
+    { postcode: '2001', suburb: 'CBD' },
     // Premium Eastern Suburbs
     { postcode: '2030', suburb: 'Vaucluse / Watsons Bay' },
     { postcode: '2028', suburb: 'Mosman / Double Bay' },
+    { postcode: '2026', suburb: 'Bondi' },
+    { postcode: '2022', suburb: 'Bondi Junction' },
   ]
 
-  // Combine all zones (using Map to handle duplicate postcodes)
-  const zoneMap = new Map<string, { postcode: string; suburb: string; zone: number }>()
-  
-  // Add Zone 1
-  zone1Postcodes.forEach(zone => {
-    zoneMap.set(zone.postcode, { ...zone, zone: 1 })
-  })
-  
-  // Add Zone 2 (will overwrite if postcode exists, but shouldn't)
-  zone2Postcodes.forEach(zone => {
-    zoneMap.set(zone.postcode, { ...zone, zone: 2 })
-  })
-  
-  // Add Zone 3 (Premium locations)
-  zone3Postcodes.forEach(zone => {
-    zoneMap.set(zone.postcode, { ...zone, zone: 3 })
-  })
-  
-  const allZones = Array.from(zoneMap.values())
+  // One row per (postcode, suburb); do not collapse by postcode — same postcode can serve multiple suburbs.
+  const allZones = [
+    ...zone1Postcodes.map((z) => ({ ...z, zone: 1 as const })),
+    ...zone2Postcodes.map((z) => ({ ...z, zone: 2 as const })),
+    ...zone3Postcodes.map((z) => ({ ...z, zone: 3 as const })),
+  ]
 
   // Create delivery zones (skip if already exists)
   for (const zone of allZones) {
     const existing = await prisma.deliveryZone.findFirst({
-      where: { postcode: zone.postcode },
+      where: { postcode: zone.postcode, suburb: zone.suburb },
     })
 
     const deliveryFee = zone.zone === 1 ? 15 : zone.zone === 2 ? 25 : zone.zone === 3 ? 35 : 15 // Zone 1: $15, Zone 2: $25, Zone 3: $35
