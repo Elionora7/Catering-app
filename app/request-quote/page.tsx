@@ -311,7 +311,6 @@ function RequestQuotePageContent() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-colors"
                 >
                   <option value="">Select event type</option>
-                  <option value="Wedding">Wedding</option>
                   <option value="Corporate Event">Corporate Event</option>
                   <option value="Birthday">Birthday</option>
                   <option value="Private Party">Private Party</option>
