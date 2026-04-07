@@ -5,6 +5,15 @@ import { sendQuoteRequestNotification } from '@/lib/mailer/sendQuoteRequestNotif
 import { quoteRequestSchema } from '@/utils/validators'
 import { ZodError } from 'zod'
 
+function isSydneyPostcode(postcode: string): boolean {
+  // Sydney CBD + metro range; explicitly includes requested postcodes.
+  const explicit = new Set(['2060', '2088'])
+  if (explicit.has(postcode)) return true
+
+  const n = Number(postcode)
+  return Number.isInteger(n) && n >= 2000 && n <= 2234
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -26,7 +35,7 @@ export async function POST(request: Request) {
 
     const deliveryZone = await findActiveDeliveryZone(trimmedPostcode, trimmedSuburb)
 
-    if (!deliveryZone) {
+    if (!deliveryZone && !isSydneyPostcode(trimmedPostcode)) {
       return NextResponse.json(
         {
           error: 'We currently do not deliver to this suburb/postcode combination. Please check your address and try again.',
@@ -43,7 +52,7 @@ export async function POST(request: Request) {
         eventType: validatedData.eventType,
         estimatedGuests,
         preferredDate: validatedData.preferredDate || null,
-        suburb: deliveryZone.suburb,
+        suburb: deliveryZone?.suburb || trimmedSuburb,
         budgetRange: validatedData.budgetRange || null,
         message: validatedData.message || null,
         cartItems: validatedData.cartItems,
