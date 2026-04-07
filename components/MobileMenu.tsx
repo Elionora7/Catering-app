@@ -6,7 +6,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
 import { SocialMediaLinks } from '@/components/SocialMediaLinks'
 
-export function MobileMenu() {
+export function MobileMenu({ scrolled = false }: { scrolled?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const { data: session } = useSession()
   const { totalItems } = useCart()
@@ -16,11 +16,16 @@ export function MobileMenu() {
       {/* Mobile menu button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden p-2 rounded-md text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
+        className={`md:hidden inline-flex items-center gap-1.5 px-2 py-2 rounded-md transition-colors font-semibold text-sm ${
+          scrolled
+            ? 'text-[#D4AF37] hover:bg-[#D4AF37]/10'
+            : 'text-[#0F3D3E] hover:bg-[#0F3D3E]/10'
+        }`}
         aria-label="Toggle menu"
       >
+        <span>Menu</span>
         <svg
-          className="w-6 h-6"
+          className="w-5 h-5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

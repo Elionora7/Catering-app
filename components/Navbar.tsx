@@ -41,7 +41,6 @@ export function Navbar() {
                 className="h-auto object-contain transition-all duration-300"
               />
             </Link>
-            <MobileMenu />
             <div className="hidden md:flex space-x-1">
               <NavLink href="/menu" scrolled={scrolled}>Menu</NavLink>
               <NavLink href="/service-areas" scrolled={scrolled}>Service Areas</NavLink>
@@ -57,7 +56,28 @@ export function Navbar() {
               </NavLink>
             </div>
           </div>
-          <div className="flex items-center space-x-3 sm:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <Link
+              href="/cart"
+              className={`md:hidden relative inline-flex items-center justify-center p-2 rounded-md transition-colors ${
+                scrolled
+                  ? 'text-white hover:text-[#D4AF37] hover:bg-white/10'
+                  : 'text-[#0F3D3E] hover:text-[#D4AF37] hover:bg-[#0F3D3E]/10'
+              }`}
+              aria-label="Open cart"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m14-9l2 9m-5-9v9m-4-9v9" />
+              </svg>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#D4AF37] text-[#0F3D3E] text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+            <div className="md:hidden">
+              <MobileMenu scrolled={scrolled} />
+            </div>
             <div className="hidden md:block">
               <SocialMediaLinks
                 linkClassName={
