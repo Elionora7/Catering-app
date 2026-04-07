@@ -9,6 +9,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const validatedData = quoteRequestSchema.parse(body)
+    const estimatedGuests = validatedData.estimatedGuests ?? null
+
+    // Backend hard limit: never allow >100 guests through API (prevents client bypass).
+    if (estimatedGuests != null && estimatedGuests > 100) {
+      return NextResponse.json(
+        {
+          error: 'Maximum 100 guests allowed. Please contact us for larger events.',
+        },
+        { status: 400 }
+      )
+    }
 
     const trimmedPostcode = validatedData.postcode.trim()
     const trimmedSuburb = validatedData.suburb.trim()
@@ -30,7 +41,7 @@ export async function POST(request: Request) {
         email: validatedData.email,
         phone: validatedData.phone,
         eventType: validatedData.eventType,
-        estimatedGuests: validatedData.estimatedGuests || null,
+        estimatedGuests,
         preferredDate: validatedData.preferredDate || null,
         suburb: deliveryZone.suburb,
         budgetRange: validatedData.budgetRange || null,

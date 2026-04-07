@@ -17,6 +17,9 @@ import {
 } from '@/lib/quoteRequestContext'
 
 function RequestQuotePageContent() {
+  const MAX_QUOTE_GUESTS = 100
+  const MAX_QUOTE_GUESTS_MESSAGE =
+    'Maximum 100 guests allowed for online booking. Please contact us for larger events.'
   const router = useRouter()
   const searchParams = useSearchParams()
   const { items, totalPrice, clearCart } = useCart()
@@ -97,6 +100,11 @@ function RequestQuotePageContent() {
     setIsSubmitting(true)
 
     try {
+      const parsedGuests = formData.estimatedGuests ? parseInt(formData.estimatedGuests, 10) : null
+      if (parsedGuests != null && Number.isFinite(parsedGuests) && parsedGuests > MAX_QUOTE_GUESTS) {
+        throw new Error(MAX_QUOTE_GUESTS_MESSAGE)
+      }
+
       const response = await fetch('/api/quotes', {
         method: 'POST',
         headers: {
@@ -107,7 +115,7 @@ function RequestQuotePageContent() {
           email: formData.email,
           phone: formData.phone,
           eventType: formData.eventType,
-          estimatedGuests: formData.estimatedGuests ? parseInt(formData.estimatedGuests) : null,
+          estimatedGuests: parsedGuests,
           preferredDate: formData.preferredDate || null,
           postcode: formData.postcode.trim(),
           suburb: formData.suburb.trim(),
@@ -321,10 +329,30 @@ function RequestQuotePageContent() {
                     type="number"
                     id="estimatedGuests"
                     min="1"
+                    max={MAX_QUOTE_GUESTS}
                     value={formData.estimatedGuests}
-                    onChange={(e) => setFormData({ ...formData, estimatedGuests: e.target.value })}
+                    onChange={(e) => {
+                      const next = e.target.value
+                      if (next === '') {
+                        setFormData({ ...formData, estimatedGuests: '' })
+                        if (error === MAX_QUOTE_GUESTS_MESSAGE) setError('')
+                        return
+                      }
+                      const n = Number(next)
+                      if (!Number.isFinite(n)) return
+                      if (n > MAX_QUOTE_GUESTS) {
+                        setFormData({ ...formData, estimatedGuests: String(MAX_QUOTE_GUESTS) })
+                        setError(MAX_QUOTE_GUESTS_MESSAGE)
+                        return
+                      }
+                      setFormData({ ...formData, estimatedGuests: next })
+                      if (error === MAX_QUOTE_GUESTS_MESSAGE) setError('')
+                    }}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-colors"
                   />
+                  <p className="mt-2 text-xs text-[#0F3D3E]/70">
+                    For events over 100 guests, please contact us directly.
+                  </p>
                 </div>
 
                 <div>

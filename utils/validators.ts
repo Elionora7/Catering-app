@@ -289,7 +289,7 @@ export const quoteRequestSchema = z.object({
     })
     .int('Estimated guests must be an integer')
     .positive('Estimated guests must be positive')
-    .max(10000, 'Estimated guests must be less than 10,000')
+    .max(100, 'Maximum 100 guests allowed. Please contact us for larger events.')
     .optional()
     .nullable(),
   preferredDate: z.coerce.date({
