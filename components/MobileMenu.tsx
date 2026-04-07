@@ -16,16 +16,15 @@ export function MobileMenu({ scrolled = false }: { scrolled?: boolean }) {
       {/* Mobile menu button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`md:hidden inline-flex items-center gap-1.5 px-2 py-2 rounded-md transition-colors font-semibold text-sm ${
+        className={`md:hidden inline-flex items-center justify-center p-2 rounded-md transition-colors ${
           scrolled
             ? 'text-[#D4AF37] hover:bg-[#D4AF37]/10'
             : 'text-[#0F3D3E] hover:bg-[#0F3D3E]/10'
         }`}
         aria-label="Toggle menu"
       >
-        <span>Menu</span>
         <svg
-          className="w-5 h-5"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
