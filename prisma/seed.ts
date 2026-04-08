@@ -6,8 +6,12 @@ import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { PrismaPg } from '@prisma/adapter-pg'
 
-const databaseUrl = process.env.DATABASE_URL
-if (!databaseUrl) throw new Error('DATABASE_URL is not set')
+function requireDatabaseUrl(): string {
+  const u = process.env.DATABASE_URL?.trim()
+  if (!u) throw new Error('DATABASE_URL is not set')
+  return u
+}
+const databaseUrl = requireDatabaseUrl()
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
@@ -17,8 +21,19 @@ const prisma = new PrismaClient({
 
 const BAIN_MARIE_FEE = 55
 
+function logDatabaseTarget(url: string) {
+  try {
+    const normalized = url.replace(/^postgresql:/i, 'https:')
+    const u = new URL(normalized)
+    console.log(`[seed] DATABASE_URL → host: ${u.hostname} (path: ${u.pathname || '/'})`)
+  } catch {
+    console.log('[seed] DATABASE_URL is set (could not parse for logging)')
+  }
+}
+
 async function main() {
   console.log('🌱 Starting seed...')
+  logDatabaseTarget(databaseUrl)
 
   // ----- Admin User -----
   const admin = await prisma.user.upsert({
@@ -1455,6 +1470,18 @@ async function main() {
   const zone1Count = allZones.filter((z) => z.zone === 1).length
   const zone2Count = allZones.filter((z) => z.zone === 2).length
   console.log(`✔ Created/updated ${allZones.length} delivery zones (Zone 1 $15: ${zone1Count}, Zone 2 $25: ${zone2Count})`)
+
+  const feeCheck = await prisma.deliveryZone.groupBy({
+    by: ['deliveryFee'],
+    _count: { _all: true },
+  })
+  console.log('[seed] delivery_zones fee counts:', feeCheck)
+  const badFees = await prisma.deliveryZone.count({
+    where: { deliveryFee: { notIn: [15, 25] } },
+  })
+  if (badFees > 0) {
+    console.warn(`[seed] WARNING: ${badFees} rows still have deliveryFee not 15 or 25 — run clamp again or inspect DB`)
+  }
 
   console.log('🌱 Seed completed!')
 }
