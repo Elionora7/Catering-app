@@ -28,7 +28,7 @@ export function HeroSection() {
             Authentic Lebanese Catering Across Sydney
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto font-light animate-slideUp">
-            Fresh, generous catering platters for events, offices, and celebrations.
+            Fresh, generous catering platters for events, offices, celebrations, and daily meals.
           </p>
           
           {/* CTAs */}
