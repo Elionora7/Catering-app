@@ -1943,23 +1943,18 @@ function CheckoutPageContent() {
                   <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 sm:p-5 space-y-3">
                     <h3 className="text-base font-semibold text-amber-950">Allergen Disclaimer</h3>
                     <p className="text-sm text-amber-900 leading-relaxed">
-                      Eliora Signature Catering Pty Ltd prepares food in a kitchen that handles common allergens,
-                      including nuts, dairy, gluten, eggs, seafood, sesame, and soy.
+                      Our kitchen handles common allergens, including nuts, dairy, gluten, eggs, seafood, sesame, and
+                      soy.
                     </p>
                     <p className="text-sm text-amber-900 leading-relaxed">
-                      We take care in food preparation but cannot guarantee products are allergen-free. We do not cater
-                      for allergy requests.
+                      We cannot guarantee allergen-free food; cross-contamination may occur.
                     </p>
-                    <p className="text-sm font-medium text-amber-950">By ordering, you acknowledge that:</p>
-                    <ul className="text-sm text-amber-900 list-disc pl-5 space-y-1 leading-relaxed">
-                      <li>
-                        Cross-contamination may occur, and Eliora Signature Catering Pty Ltd is not liable for allergic
-                        reactions.
-                      </li>
-                      <li>For events, it is your responsibility to inform guests of this disclaimer.</li>
-                    </ul>
                     <p className="text-sm text-amber-900 leading-relaxed">
-                      By ticking the acceptance box, you confirm you have read, understood, and agreed to this disclaimer.
+                      Our food is not suitable for anyone with severe allergies.
+                    </p>
+                    <p className="text-sm text-amber-900 leading-relaxed">
+                      Eliora Signature Catering Pty Ltd is not liable for allergic reactions. For events, please ensure
+                      your guests are informed.
                     </p>
                     <label className="mt-2 flex items-start gap-2 text-sm font-medium text-amber-900">
                       <input
@@ -1973,7 +1968,7 @@ function CheckoutPageContent() {
                         }}
                         className="mt-0.5 h-4 w-4 shrink-0 rounded border-amber-400 text-[#D4AF37] focus:ring-[#D4AF37]"
                       />
-                      <span>I confirm I have read, understood, and agreed to the allergen disclaimer above.</span>
+                      <span>I have read and agree to this allergen disclaimer.</span>
                     </label>
                     {allergyConsentError && (
                       <p className="mt-2 text-sm text-red-700">{allergyConsentError}</p>
