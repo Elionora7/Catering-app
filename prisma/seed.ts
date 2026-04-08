@@ -1349,6 +1349,7 @@ async function main() {
     { postcode: '2171', suburb: 'Cabramatta' },
     { postcode: '2172', suburb: 'Canley Vale' },
     { postcode: '2173', suburb: 'Canley Heights' },
+    { postcode: '2212', suburb: 'Revesby' },
   ]
 
   // Zone 2 - Standard: Beyond 15 km up to ~30-minute drive - $25 delivery fee
@@ -1363,7 +1364,6 @@ async function main() {
     { postcode: '2193', suburb: 'Canterbury' },
     { postcode: '2194', suburb: 'Earlwood' },
     { postcode: '2195', suburb: 'Bardwell Park' },
-    { postcode: '2212', suburb: 'Revesby' },
     // Sutherland Shire
     { postcode: '2228', suburb: 'Miranda' },
   ]
