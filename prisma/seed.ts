@@ -1352,13 +1352,14 @@ async function main() {
     { postcode: '2212', suburb: 'Revesby' },
     // ~5–8 km from Punchbowl — within 20 km band (was Zone 2; aligned with local pricing)
     { postcode: '2166', suburb: 'Greenacre' },
+    // Canterbury corridor — close to Punchbowl / Greenacre band ($15)
+    { postcode: '2191', suburb: 'Belfield' },
   ]
 
   // Zone 2: ~20 km and beyond from Punchbowl — $25 delivery fee
   const zone2Postcodes = [
     // Additional South West / Canterbury corridor
     { postcode: '2190', suburb: 'Belmore' },
-    { postcode: '2191', suburb: 'Belfield' },
     { postcode: '2192', suburb: 'Campsie' },
     { postcode: '2193', suburb: 'Hurlstone Park' },
     { postcode: '2193', suburb: 'Canterbury' },
@@ -1436,9 +1437,18 @@ async function main() {
     }
   }
 
-  // Former $35 tier removed — normalize any legacy rows still at 35 down to $25.
+  // Force correct fee on every row matching seed (handles duplicate rows + stale fees).
+  for (const zone of allZones) {
+    const fee = zone.zone === 1 ? 15 : 25
+    await prisma.deliveryZone.updateMany({
+      where: { postcode: zone.postcode, suburb: zone.suburb },
+      data: { deliveryFee: fee, minimumOrder: 90, isActive: true },
+    })
+  }
+
+  // Only two price tiers: $15 or $25. Any legacy/admin value (e.g. 35) becomes $25.
   await prisma.deliveryZone.updateMany({
-    where: { deliveryFee: 35 },
+    where: { deliveryFee: { notIn: [15, 25] } },
     data: { deliveryFee: 25 },
   })
 
