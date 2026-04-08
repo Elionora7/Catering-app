@@ -2,6 +2,7 @@
 // Run locally using: npm run db:seed
 import './load-env'
 
+import { MIN_DELIVERY_ZONE_ORDER } from '@/lib/checkoutConstants'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { PrismaPg } from '@prisma/adapter-pg'
@@ -1426,7 +1427,7 @@ async function main() {
     })
 
     const deliveryFee = zone.zone === 1 ? 15 : 25 // Zone 1: $15, Zone 2: $25
-    const minimumOrder = 90
+    const minimumOrder = MIN_DELIVERY_ZONE_ORDER
 
     if (!existing) {
       await prisma.deliveryZone.create({
@@ -1457,7 +1458,7 @@ async function main() {
     const fee = zone.zone === 1 ? 15 : 25
     await prisma.deliveryZone.updateMany({
       where: { postcode: zone.postcode, suburb: zone.suburb },
-      data: { deliveryFee: fee, minimumOrder: 90, isActive: true },
+      data: { deliveryFee: fee, minimumOrder: MIN_DELIVERY_ZONE_ORDER, isActive: true },
     })
   }
 
@@ -1465,6 +1466,12 @@ async function main() {
   await prisma.deliveryZone.updateMany({
     where: { deliveryFee: { notIn: [15, 25] } },
     data: { deliveryFee: 25 },
+  })
+
+  // Align minimum order (e.g. legacy $90) to current checkout minimum.
+  await prisma.deliveryZone.updateMany({
+    where: { minimumOrder: { not: MIN_DELIVERY_ZONE_ORDER } },
+    data: { minimumOrder: MIN_DELIVERY_ZONE_ORDER },
   })
 
   const zone1Count = allZones.filter((z) => z.zone === 1).length

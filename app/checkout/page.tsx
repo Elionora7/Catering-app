@@ -17,6 +17,7 @@ import {
   FOOD_WARMER_OPTION_DESCRIPTION,
   formatOrderItemDisplayName,
 } from '@/lib/foodWarmerCopy'
+import { MIN_CHECKOUT_SUBTOTAL } from '@/lib/checkoutConstants'
 
 const STRIPE_FEE_PERCENT = 0.035
 
@@ -42,7 +43,7 @@ function CheckoutPageContent() {
 
   // Calculate totals (cart-only; prebookings are currently not active)
   const subtotal = totalPrice
-  const minimumCheckoutSubtotal = 100
+  const minimumCheckoutSubtotal = MIN_CHECKOUT_SUBTOTAL
   const normalCheckoutMax = 400
   const directCheckoutMax = 1000
 
@@ -143,10 +144,6 @@ function CheckoutPageContent() {
       ? Math.round(total * STRIPE_FEE_PERCENT * 100) / 100
       : 0
   const finalTotal = Math.round((total + stripeFee) * 100) / 100
-  const orderTotalForGst =
-    formData.paymentMethod === 'stripe' ? finalTotal : total
-  const gstIncluded =
-    Math.round((orderTotalForGst / 11) * 100) / 100
   /** Bank transfer $401–$999: 30% now, 70% by 5 days before event. */
   const bankPartialDeposit =
     formData.paymentMethod === 'bank_transfer' && total >= 401 && total <= 999
@@ -355,7 +352,7 @@ function CheckoutPageContent() {
     const rows = (bankTransferInvoice.items || [])
       .map((item: any) => `<tr><td>${item.name}</td><td style="text-align:center">${item.quantity}</td><td style="text-align:right">$${Number(item.price).toFixed(2)}</td><td style="text-align:right">$${Number(item.lineTotal).toFixed(2)}</td></tr>`)
       .join('')
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${bankTransferOrderId}</title></head><body style="font-family:Arial,sans-serif;padding:24px"><h1>Invoice</h1><p><strong>Order ID:</strong> ${bankTransferOrderId}</p><p><strong>Payment Method:</strong> Bank Transfer</p><table style="width:100%;border-collapse:collapse" border="1" cellpadding="8"><thead><tr><th align="left">Item</th><th>Qty</th><th align="right">Unit</th><th align="right">Line</th></tr></thead><tbody>${rows}</tbody></table><p><strong>Subtotal:</strong> $${Number(bankTransferInvoice.subtotal).toFixed(2)}</p><p><strong>Delivery Fee:</strong> $${Number(bankTransferInvoice.deliveryFee).toFixed(2)}</p><p><strong>GST (included):</strong> $${Number(bankTransferInvoice.gstIncluded).toFixed(2)}</p><h2>Total: $${Number(bankTransferInvoice.total).toFixed(2)}</h2></body></html>`
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${bankTransferOrderId}</title></head><body style="font-family:Arial,sans-serif;padding:24px"><h1>Invoice</h1><p><strong>Order ID:</strong> ${bankTransferOrderId}</p><p><strong>Payment Method:</strong> Bank Transfer</p><table style="width:100%;border-collapse:collapse" border="1" cellpadding="8"><thead><tr><th align="left">Item</th><th>Qty</th><th align="right">Unit</th><th align="right">Line</th></tr></thead><tbody>${rows}</tbody></table><p><strong>Subtotal:</strong> $${Number(bankTransferInvoice.subtotal).toFixed(2)}</p><p><strong>Delivery Fee:</strong> $${Number(bankTransferInvoice.deliveryFee).toFixed(2)}</p><h2>Total: $${Number(bankTransferInvoice.total).toFixed(2)}</h2></body></html>`
     const blob = new Blob([html], { type: 'text/html' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -642,7 +639,6 @@ function CheckoutPageContent() {
           subtotal,
           deliveryFee,
           total,
-          gstIncluded,
         })
       }
 
@@ -1144,10 +1140,6 @@ function CheckoutPageContent() {
                     <span className="font-semibold">${stripeFee.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600">GST (included):</span>
-                  <span className="font-semibold">${gstIncluded.toFixed(2)}</span>
-                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-gray-900">Total:</span>
                   <span className="text-2xl font-bold text-[#D4AF37]">
@@ -2447,10 +2439,6 @@ function CheckoutPageContent() {
                         <div className="flex justify-between text-lg font-bold pt-3 border-t-2 border-gray-300">
                           <span>Total:</span>
                           <span className="text-[#D4AF37]">${(formData.paymentMethod === 'stripe' ? finalTotal : total).toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm text-gray-600">
-                          <span>GST (included):</span>
-                          <span>${gstIncluded.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>

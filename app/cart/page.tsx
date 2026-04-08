@@ -12,6 +12,7 @@ import { isBbqBainMarieEligibleMeal, isDipTrayComboMeal, shouldChargeBainMarieSe
 import { getMealMinimumQuantity } from '@/lib/categoryMinimums'
 import { cartLineSizeLabel, FOOD_WARMER_OPTION_DESCRIPTION } from '@/lib/foodWarmerCopy'
 import { buildQuoteRequestContextFromCart, saveQuoteRequestContextToSession } from '@/lib/quoteRequestContext'
+import { MIN_CHECKOUT_SUBTOTAL } from '@/lib/checkoutConstants'
 
 function cartLineSizeLabelFromItem(item: CartItem) {
   if (!item.size) return ''
@@ -24,8 +25,7 @@ export default function CartPage() {
 
   const hasItems = items.length > 0
   const quoteOnlyThreshold = 1000
-  const minimumCheckoutSubtotal = 100
-  const gstIncluded = totalPrice / 11
+  const minimumCheckoutSubtotal = MIN_CHECKOUT_SUBTOTAL
 
   const invalidMinimums = useMemo(() => {
     return items
@@ -243,10 +243,6 @@ export default function CartPage() {
                       <span className="font-bold text-xl text-[#D4AF37]">
                         ${totalPrice.toFixed(2)}
                       </span>
-                    </div>
-                    <div className="mt-2 flex justify-between items-center text-sm text-[#0F3D3E]/80">
-                      <span>GST (included):</span>
-                      <span>${gstIncluded.toFixed(2)}</span>
                     </div>
                   </div>
                 </FadeUp>

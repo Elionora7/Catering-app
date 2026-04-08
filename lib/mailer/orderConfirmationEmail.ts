@@ -21,7 +21,7 @@ export type OrderConfirmationPayload = {
   phoneNumber?: string
   items: OrderConfirmationLineItem[]
   totalAmount: number
-  /** Subtotal + delivery (GST-inclusive), before card fee */
+  /** Subtotal + delivery, before card fee */
   baseTotal?: number
   subtotal: number
   deliveryFee: number
@@ -252,7 +252,6 @@ export function buildOrderConfirmationHtml(p: OrderConfirmationPayload): string 
                           <tr><td style="padding:8px 0;border-bottom:1px solid rgba(15,61,62,0.08);">Delivery Fee</td><td style="padding:8px 0;text-align:right;border-bottom:1px solid rgba(15,61,62,0.08);">${formatCurrency(p.deliveryFee)}</td></tr>
                           <tr><td style="padding:8px 0;border-bottom:1px solid rgba(15,61,62,0.08);">Order total (excl. card fee)</td><td style="padding:8px 0;text-align:right;border-bottom:1px solid rgba(15,61,62,0.08);">${formatCurrency(baseTotalSafe)}</td></tr>
                           ${hasStripeFee ? `<tr><td style="padding:8px 0;border-bottom:1px solid rgba(15,61,62,0.08);">Card processing fee (3.5%)</td><td style="padding:8px 0;text-align:right;border-bottom:1px solid rgba(15,61,62,0.08);">${formatCurrency(Number(p.stripeFee))}</td></tr>` : ''}
-                          <tr><td style="padding:8px 0;border-bottom:1px solid rgba(15,61,62,0.08);">GST (included)</td><td style="padding:8px 0;text-align:right;border-bottom:1px solid rgba(15,61,62,0.08);">${formatCurrency(Math.round((Number(p.totalAmount || 0) / 11) * 100) / 100)}</td></tr>
                           ${
                             schedule === 'FULL_STRIPE'
                               ? ''

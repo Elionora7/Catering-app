@@ -1,5 +1,5 @@
 /**
- * Online checkout payment rules (AUD, GST-inclusive totals).
+ * Online checkout payment rules (AUD). GST is not shown or split out for now.
  * Enforced in POST /api/orders and /api/payments/create-intent.
  */
 
