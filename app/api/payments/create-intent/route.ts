@@ -1,9 +1,22 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
+import Stripe from 'stripe'
 import { authOptions } from '@/lib/auth'
 import { stripe } from '@/lib/stripe'
-import { computeOrderPricing } from '@/lib/orderPricing'
+import {
+  computeOrderPricing,
+  OrderPricingUserError,
+  StaleCartMealsError,
+} from '@/lib/orderPricing'
 import { requiresOnlineQuote } from '@/lib/paymentRules'
+
+function isStaleCartMealsError(e: unknown): e is StaleCartMealsError {
+  return e instanceof StaleCartMealsError || (e instanceof Error && e.name === 'StaleCartMealsError')
+}
+
+function isOrderPricingUserError(e: unknown): e is OrderPricingUserError {
+  return e instanceof OrderPricingUserError || (e instanceof Error && e.name === 'OrderPricingUserError')
+}
 
 export async function POST(request: Request) {
   try {
@@ -96,28 +109,63 @@ export async function POST(request: Request) {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (isStaleCartMealsError(error)) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+    if (isOrderPricingUserError(error)) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    if (error instanceof Stripe.errors.StripeError) {
+      const se = error
+      console.error('[create-intent] Stripe API error:', {
+        type: se.type,
+        code: se.code,
+        statusCode: se.statusCode,
+        message: se.message,
+      })
+      // Wrong/missing secret key, revoked key, etc.
+      if (se.type === 'StripeAuthenticationError') {
+        return NextResponse.json(
+          {
+            error:
+              process.env.NODE_ENV === 'development'
+                ? se.message
+                : 'Card payment could not be started. The server Stripe key may be missing or invalid—check STRIPE_SECRET_KEY on the host matches your Stripe mode (test vs live).',
+          },
+          { status: 502 }
+        )
+      }
+      const http =
+        typeof se.statusCode === 'number' && se.statusCode >= 400 && se.statusCode < 500 ? 400 : 502
+      return NextResponse.json({ error: se.message || 'Payment provider error' }, { status: http })
+    }
+
+    const err = error as { message?: string; type?: string; code?: string; statusCode?: number; stack?: string }
     console.error('Error creating payment intent:', error)
     console.error('Error details:', {
-      message: error.message,
-      type: error.type,
-      code: error.code,
-      statusCode: error.statusCode,
-      stack: error.stack,
+      message: err.message,
+      type: err.type,
+      code: err.code,
+      statusCode: err.statusCode,
+      stack: err.stack,
     })
-    
-    // Provide more detailed error message for debugging
-    const errorMessage = error.message || 'Failed to create payment intent'
-    const errorDetails = error.type ? `${error.type}: ${errorMessage}` : errorMessage
-    
+
+    const errorMessage = err.message || 'Failed to create payment intent'
+    const errorDetails = err.type ? `${err.type}: ${errorMessage}` : errorMessage
+
     return NextResponse.json(
-      { 
+      {
         error: errorDetails,
-        details: process.env.NODE_ENV === 'development' ? {
-          type: error.type,
-          code: error.code,
-          statusCode: error.statusCode,
-        } : undefined,
+        details:
+          process.env.NODE_ENV === 'development'
+            ? {
+                type: err.type,
+                code: err.code,
+                statusCode: err.statusCode,
+              }
+            : undefined,
       },
       { status: 500 }
     )

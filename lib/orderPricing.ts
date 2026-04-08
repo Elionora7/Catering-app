@@ -2,6 +2,26 @@ import { prisma } from '@/lib/prisma'
 import { findActiveDeliveryZone } from '@/lib/deliveryZoneLookup'
 import { shouldChargeBainMarieServiceFee } from '@/lib/dipTrayCombo'
 
+/** Thrown when cart line meal IDs are missing, unpublished, or not in this database (e.g. after a re-seed). */
+export class StaleCartMealsError extends Error {
+  readonly missingIds: string[]
+  constructor(missingIds: string[]) {
+    super(
+      'Your cart includes items that are no longer on the menu. Please return to the menu, clear your cart or re-add items, and try again.'
+    )
+    this.name = 'StaleCartMealsError'
+    this.missingIds = missingIds
+  }
+}
+
+/** Thrown for invalid delivery / minimum / empty cart — should be HTTP 400, not 500. */
+export class OrderPricingUserError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'OrderPricingUserError'
+  }
+}
+
 export const STRIPE_FEE_PERCENT = 0.035
 export const BAIN_MARIE_SERVICE_FEE = 55
 
@@ -23,7 +43,7 @@ export async function computeOrderPricing(args: ComputePricingArgs) {
   const { items, deliveryType, postcode, suburb, paymentMethod } = args
 
   if (!items || items.length === 0) {
-    throw new Error('At least one cart item is required')
+    throw new OrderPricingUserError('At least one cart item is required')
   }
 
   // Same meal can appear on multiple lines (e.g. different sizes); query unique IDs only.
@@ -43,7 +63,7 @@ export async function computeOrderPricing(args: ComputePricingArgs) {
       requestedCount: uniqueMealIds.length,
       foundCount: meals.length,
     })
-    throw new Error('One or more meals not found or unavailable')
+    throw new StaleCartMealsError(missing)
   }
 
   const mealMap = new Map(meals.map((meal) => [meal.id, meal]))
@@ -67,11 +87,17 @@ export async function computeOrderPricing(args: ComputePricingArgs) {
 
   let deliveryFee = 0
   if (deliveryType === 'DELIVERY') {
-    if (!postcode || !suburb) throw new Error('Postcode and suburb are required for delivery')
+    if (!postcode || !suburb) {
+      throw new OrderPricingUserError('Postcode and suburb are required for delivery')
+    }
     const deliveryZone = await findActiveDeliveryZone(postcode.trim(), suburb.trim())
-    if (!deliveryZone) throw new Error('We do not currently deliver to your area.')
+    if (!deliveryZone) {
+      throw new OrderPricingUserError('We do not currently deliver to your area.')
+    }
     if (subtotal < deliveryZone.minimumOrder) {
-      throw new Error(`Minimum order for this area is $${deliveryZone.minimumOrder.toFixed(2)}`)
+      throw new OrderPricingUserError(
+        `Minimum order for this area is $${deliveryZone.minimumOrder.toFixed(2)}`
+      )
     }
     deliveryFee = deliveryZone.deliveryFee
   }

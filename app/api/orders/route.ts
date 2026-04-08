@@ -6,7 +6,12 @@ import { findActiveDeliveryZone } from '@/lib/deliveryZoneLookup'
 import { requireAuth } from '@/lib/auth-helpers'
 import { authOptions } from '@/lib/auth'
 import { createOrderSchema } from '@/utils/validators'
-import { BAIN_MARIE_SERVICE_FEE, computeOrderPricing } from '@/lib/orderPricing'
+import {
+  BAIN_MARIE_SERVICE_FEE,
+  computeOrderPricing,
+  OrderPricingUserError,
+  StaleCartMealsError,
+} from '@/lib/orderPricing'
 import {
   getFinalBalanceDueDate,
   isBankPartialDepositTier,
@@ -169,10 +174,14 @@ export async function POST(request: Request) {
     })
 
     if (meals.length !== uniqueMealIds.length) {
-      return NextResponse.json(
-        { error: 'One or more meals not found or unavailable' },
-        { status: 400 }
-      )
+      const foundIds = new Set(meals.map((m) => m.id))
+      const missing = uniqueMealIds.filter((id) => !foundIds.has(id))
+      console.error('[orders] Cart references meals that are missing or not available:', {
+        missingIds: missing,
+        requestedCount: uniqueMealIds.length,
+        foundCount: meals.length,
+      })
+      throw new StaleCartMealsError(missing)
     }
 
     // Calculate subtotal from cart items with size-based pricing
@@ -588,12 +597,24 @@ export async function POST(request: Request) {
       )
     }
 
+    if (
+      error instanceof StaleCartMealsError ||
+      (error instanceof Error && error.name === 'StaleCartMealsError')
+    ) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 })
+    }
+    if (
+      error instanceof OrderPricingUserError ||
+      (error instanceof Error && error.name === 'OrderPricingUserError')
+    ) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 })
+    }
+
     const errMsg = error instanceof Error ? error.message : String(error)
     console.error('Error creating order:', errMsg, error)
     return NextResponse.json(
       {
         error: 'Failed to create order',
-        // Helps debug production (Vercel logs show full error); safe to omit in client UX
         ...(process.env.NODE_ENV === 'development' && { debug: errMsg }),
       },
       { status: 500 }

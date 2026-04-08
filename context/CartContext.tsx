@@ -17,6 +17,9 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[]
+  /** Shown once when stale lines were dropped (wrong meal id / unpublished on server). */
+  cartSyncNotice: string | null
+  dismissCartSyncNotice: () => void
   addItem: (meal: Meal, quantity?: number, size?: 'SMALL' | 'MEDIUM' | 'LARGE' | 'BAIN_MARIE' | null) => void
   removeItem: (mealId: string, size?: 'SMALL' | 'MEDIUM' | 'LARGE' | 'BAIN_MARIE' | null) => void
   updateQuantity: (mealId: string, quantity: number, size?: 'SMALL' | 'MEDIUM' | 'LARGE' | 'BAIN_MARIE' | null) => void
@@ -38,45 +41,96 @@ function usesSizeVariant(meal: Meal) {
   return meal.pricingType === 'SIZED' || isBbqBainMarieEligibleMeal(meal)
 }
 
+/** Drop cart lines whose meal ids are not in the current menu (available), refresh meal snapshots. */
+async function sanitizeCartWithMenu(
+  rawItems: CartItem[]
+): Promise<{ items: CartItem[]; dropped: number }> {
+  if (rawItems.length === 0) return { items: [], dropped: 0 }
+  try {
+    const res = await fetch('/api/meals')
+    if (!res.ok) return { items: rawItems, dropped: 0 }
+    const meals: Meal[] = await res.json()
+    const available = meals.filter((m) => m.isAvailable)
+    const mealById = new Map(available.map((m) => [m.id, m]))
+    const next: CartItem[] = []
+    for (const item of rawItems) {
+      if (!item?.mealId) continue
+      const fresh = mealById.get(item.mealId)
+      if (!fresh) continue
+      const minQty = getMealMinimumQuantity(fresh)
+      const qty = typeof item.quantity === 'number' ? item.quantity : 0
+      const quantity = qty > 0 && qty < minQty ? minQty : qty
+      next.push({
+        ...item,
+        meal: fresh,
+        quantity,
+      })
+    }
+    return { items: next, dropped: rawItems.length - next.length }
+  } catch {
+    return { items: rawItems, dropped: 0 }
+  }
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [cartSyncNotice, setCartSyncNotice] = useState<string | null>(null)
   const [isHydrated, setIsHydrated] = useState(false)
   const { data: session } = useSession()
   const previousSessionRef = useRef<typeof session>(null)
 
-  // Load cart from localStorage on mount (client-side only)
+  const dismissCartSyncNotice = () => setCartSyncNotice(null)
+
+  // Load cart from localStorage on mount, then validate ids against live /api/meals (same rules as checkout).
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window === 'undefined') return
+
+    const run = async () => {
       try {
         const savedCart = localStorage.getItem(CART_STORAGE_KEY)
-        if (savedCart) {
-          const parsed = JSON.parse(savedCart)
-          // Validate that parsed data is an array
-          if (Array.isArray(parsed)) {
-            // Normalize any stale cart items (e.g. minimum quantities)
-            const normalized = parsed
-              .filter(Boolean)
-              .map((item: any) => {
-                const meal = item?.meal as Meal | undefined
-                if (!meal) return item
-                const minQty = getMealMinimumQuantity(meal)
-                const qty = typeof item.quantity === 'number' ? item.quantity : 0
-                return {
-                  ...item,
-                  quantity: qty > 0 && qty < minQty ? minQty : qty,
-                }
-              })
-            setItems(normalized)
-          }
+        if (!savedCart) {
+          setIsHydrated(true)
+          return
         }
+        const parsed = JSON.parse(savedCart)
+        if (!Array.isArray(parsed)) {
+          setIsHydrated(true)
+          return
+        }
+        const normalized = parsed
+          .filter(Boolean)
+          .map((item: any) => {
+            const meal = item?.meal as Meal | undefined
+            if (!meal) return item
+            const minQty = getMealMinimumQuantity(meal)
+            const qty = typeof item.quantity === 'number' ? item.quantity : 0
+            return {
+              ...item,
+              quantity: qty > 0 && qty < minQty ? minQty : qty,
+            }
+          }) as CartItem[]
+
+        const { items: cleaned, dropped } = await sanitizeCartWithMenu(normalized)
+        if (dropped > 0) {
+          console.warn(
+            `[Cart] Removed ${dropped} cart line(s): meal id(s) not in current menu or unavailable.`
+          )
+          setCartSyncNotice(
+            dropped === 1
+              ? 'One item was removed from your cart — it is no longer on the menu.'
+              : `${dropped} items were removed from your cart — they are no longer on the menu.`
+          )
+        }
+        setItems(cleaned)
       } catch (error) {
         console.error('Failed to load cart from localStorage', error)
-        // Clear corrupted data
         localStorage.removeItem(CART_STORAGE_KEY)
       } finally {
         setIsHydrated(true)
       }
     }
+
+    void run()
   }, [])
 
   // Watch for login/logout events to ensure cart persistence
@@ -86,18 +140,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     // When user logs in, ensure cart persists from localStorage
     if (wasLoggedOut && isNowLoggedIn && isHydrated) {
-      try {
-        const savedCart = localStorage.getItem(CART_STORAGE_KEY)
-        if (savedCart) {
+      void (async () => {
+        try {
+          const savedCart = localStorage.getItem(CART_STORAGE_KEY)
+          if (!savedCart) return
           const parsed = JSON.parse(savedCart)
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            // Cart exists in localStorage - keep it synced
-            setItems(parsed)
+          if (!Array.isArray(parsed) || parsed.length === 0) return
+          const { items: cleaned, dropped } = await sanitizeCartWithMenu(parsed as CartItem[])
+          if (dropped > 0) {
+            setCartSyncNotice(
+              dropped === 1
+                ? 'One item was removed from your cart — it is no longer on the menu.'
+                : `${dropped} items were removed from your cart — they are no longer on the menu.`
+            )
           }
+          setItems(cleaned)
+        } catch (error) {
+          console.error('Failed to sync cart on login', error)
         }
-      } catch (error) {
-        console.error('Failed to sync cart on login', error)
-      }
+      })()
     }
 
     // Update previous session ref
@@ -211,6 +272,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setItems([])
+    setCartSyncNotice(null)
     if (typeof window !== 'undefined') {
       localStorage.removeItem(CART_STORAGE_KEY)
       clearQuoteRequestContextFromSession()
@@ -244,6 +306,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     <CartContext.Provider
       value={{
         items,
+        cartSyncNotice,
+        dismissCartSyncNotice,
         addItem,
         removeItem,
         updateQuantity,

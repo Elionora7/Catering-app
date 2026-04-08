@@ -21,7 +21,8 @@ function cartLineSizeLabelFromItem(item: CartItem) {
 
 export default function CartPage() {
   const router = useRouter()
-  const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCart()
+  const { items, removeItem, updateQuantity, clearCart, totalPrice, cartSyncNotice, dismissCartSyncNotice } =
+    useCart()
 
   const hasItems = items.length > 0
   const quoteOnlyThreshold = 1000
@@ -66,6 +67,18 @@ export default function CartPage() {
       <PageHero title="Shopping Cart" />
       <main className="min-h-screen py-12">
         <PageContainer>
+          {cartSyncNotice && (
+            <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p>{cartSyncNotice}</p>
+              <button
+                type="button"
+                onClick={() => dismissCartSyncNotice()}
+                className="shrink-0 text-amber-900 font-medium underline hover:no-underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {!hasItems ? (
             <FadeUp delay={0.2}>

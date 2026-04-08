@@ -10,7 +10,10 @@ import { useState, FormEvent, useEffect } from 'react'
 interface StripeCardElementProps {
   onPaymentSuccess?: (paymentIntentId: string) => void
   onPaymentError?: (error: string) => void
+  /** True while the parent form is submitting — disables inputs briefly */
   disabled?: boolean
+  /** When true, the Pay button stays disabled (e.g. until allergy disclaimer is accepted). Card fields stay editable. */
+  payDisabled?: boolean
   clientSecret?: string
   /** Name on card — required for billing_details; kept in sync with parent checkout state */
   cardholderName?: string
@@ -37,6 +40,7 @@ export function StripeCardElement({
   onPaymentSuccess,
   onPaymentError,
   disabled = false,
+  payDisabled = false,
   clientSecret,
   cardholderName,
   onCardholderNameChange,
@@ -395,6 +399,7 @@ export function StripeCardElement({
           !elements ||
           isProcessing ||
           disabled ||
+          payDisabled ||
           !cardComplete ||
           !!cardError ||
           !(cardholderName && cardholderName.trim()) ||

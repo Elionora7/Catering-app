@@ -32,7 +32,7 @@ function cartLineKey(
 function CheckoutPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { items, totalPrice, clearCart } = useCart()
+  const { items, totalPrice, clearCart, cartSyncNotice, dismissCartSyncNotice } = useCart()
   const createOrder = useCreateOrder()
   const checkoutFormRef = useRef<HTMLFormElement | null>(null)
   const stripeAutoSubmitTriggeredRef = useRef(false)
@@ -938,6 +938,19 @@ function CheckoutPageContent() {
         <p className="text-sm text-[#0F3D3E]/80 mb-6 sm:mb-8 max-w-2xl">
           No account required. Simply place your order.
         </p>
+
+        {cartSyncNotice && (
+          <div className="mb-6 max-w-2xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p>{cartSyncNotice}</p>
+            <button
+              type="button"
+              onClick={() => dismissCartSyncNotice()}
+              className="shrink-0 text-amber-900 font-medium underline hover:no-underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {bankTransferOrderId ? (
           <div className="max-w-3xl mx-auto">
@@ -2183,13 +2196,30 @@ function CheckoutPageContent() {
                                 setStripePaymentSucceeded(false)
                                 stripeAutoSubmitTriggeredRef.current = false
                               }}
-                              disabled={isSubmitting || !allergyConsentAcknowledged}
+                              disabled={isSubmitting}
+                              payDisabled={!allergyConsentAcknowledged}
                             />
                             </StripeProvider>
                           </div>
                         ) : (
-                          <div className="text-center py-4 text-gray-500">
-                            <p className="text-sm">Click to initialize secure payment</p>
+                          <div className="py-4">
+                            {error ? (
+                              <div className="bg-red-50 border-2 border-red-500 text-red-800 px-4 py-3 rounded-lg text-sm">
+                                <p className="font-semibold mb-1">Payment could not start</p>
+                                <p>{error}</p>
+                                <p className="text-xs text-red-700 mt-2">
+                                  Try refreshing the page or paying by bank transfer. If it keeps failing, contact us—live
+                                  sites need Stripe keys set on the host and a redeploy after keys change.
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="text-center text-gray-500">
+                                <p className="text-sm">
+                                  Card fields appear when the payment session is ready. If this stays empty, refresh the
+                                  page.
+                                </p>
+                              </div>
+                            )}
                           </div>
                         )}
 

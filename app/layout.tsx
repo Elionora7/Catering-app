@@ -5,6 +5,12 @@ import './globals.css'
 import { Providers } from './providers'
 import { ClientLayout } from '@/components/ClientLayout'
 import { authOptions } from '@/lib/auth'
+import { getSiteUrl } from '@/lib/siteUrl'
+
+const siteUrl = getSiteUrl()
+const defaultTitle = 'Eliora Signature Catering | Authentic Lebanese Catering in Sydney'
+const defaultDescription =
+  'Eliora Signature Catering — fresh Mediterranean-inspired cuisine for events and daily meals. Authentic Lebanese catering in Sydney with fresh ingredients, traditional flavours, and professional service.'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -19,8 +25,37 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: 'Eliora Signature Catering | Authentic Lebanese Catering in Sydney',
-  description: 'Fresh Mediterranean-Inspired Cuisine for Events & Daily Meals. Authentic Lebanese catering in Sydney with fresh ingredients, traditional flavors, and professional service.',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: defaultTitle,
+    template: '%s | Eliora Signature Catering',
+  },
+  description: defaultDescription,
+  keywords: [
+    'Eliora Signature Catering',
+    'Eliora Catering',
+    'Lebanese catering Sydney',
+    'Mediterranean catering Sydney',
+    'catering Sydney',
+    'event catering',
+    'corporate catering Sydney',
+  ],
+  authors: [{ name: 'Eliora Signature Catering' }],
+  creator: 'Eliora Signature Catering',
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: 'website',
+    locale: 'en_AU',
+    url: siteUrl,
+    siteName: 'Eliora Signature Catering',
+    title: defaultTitle,
+    description: defaultDescription,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: defaultTitle,
+    description: defaultDescription,
+  },
 }
 
 /** Session must be resolved per request (not at static build time) so NextAuth can skip a broken initial /api/auth/session fetch. */
