@@ -1364,6 +1364,8 @@ async function main() {
     { postcode: '2194', suburb: 'Earlwood' },
     { postcode: '2195', suburb: 'Bardwell Park' },
     { postcode: '2212', suburb: 'Revesby' },
+    // Sutherland Shire
+    { postcode: '2228', suburb: 'Miranda' },
   ]
 
   // Zone 3 - Far: Selected high-end suburbs beyond 30 min - $35 flat delivery fee
