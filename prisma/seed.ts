@@ -1312,11 +1312,11 @@ async function main() {
 
   // ----- Delivery Zones (Zone 1: $15, Zone 2: $25, Zone 3: $35) -----
   
-  // Zone 1 - Local: Up to 15 km from Punchbowl - $15 delivery fee
-  // Core nearby delivery zone
+  // Zone 1 - Local: up to ~20 km from Punchbowl — $15 delivery fee
+  // One row per (postcode + suburb) for checkout matching; list is curated, not auto distance.
   const zone1Postcodes = [
     { postcode: '2196', suburb: 'Punchbowl' },
-    // Same postcode as Punchbowl (2196) — customers often enter Roselands + 2196
+    // Same postcode (2196) — Roselands is Zone 1 $15 (adjacent to Punchbowl)
     { postcode: '2196', suburb: 'Roselands' },
     { postcode: '2134', suburb: 'Burwood' },
     { postcode: '2135', suburb: 'Strathfield' },
@@ -1349,14 +1349,15 @@ async function main() {
     { postcode: '2171', suburb: 'Cabramatta' },
     { postcode: '2172', suburb: 'Canley Vale' },
     { postcode: '2173', suburb: 'Canley Heights' },
+    // ~10 km from Punchbowl — within 20 km band
     { postcode: '2212', suburb: 'Revesby' },
+    // ~5–8 km from Punchbowl — within 20 km band (was Zone 2; aligned with local pricing)
+    { postcode: '2166', suburb: 'Greenacre' },
   ]
 
-  // Zone 2 - Standard: Beyond 15 km up to ~30-minute drive - $25 delivery fee
-  // Extended areas within 30 min drive
+  // Zone 2 - Standard: roughly beyond ~20 km from Punchbowl but still regular service — $25 delivery fee
   const zone2Postcodes = [
-    // Additional South West areas
-    { postcode: '2166', suburb: 'Greenacre' },
+    // Additional South West / Canterbury corridor
     { postcode: '2190', suburb: 'Belmore' },
     { postcode: '2191', suburb: 'Belfield' },
     { postcode: '2192', suburb: 'Campsie' },
