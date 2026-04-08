@@ -1368,6 +1368,7 @@ async function main() {
 
   // Zone 3 - Far: Selected high-end suburbs beyond 30 min - $35 flat delivery fee
   // Premium locations (classy areas beyond 30 min)
+  // Note: checkout matches **exact** suburb + postcode (normalized). Add common spellings as separate rows.
   const zone3Postcodes = [
     // Sydney CBD (multiple suburb labels per postcode so customers can match how they type)
     { postcode: '2000', suburb: 'Sydney CBD (City Centre, Central, Circular Quay, The Rocks)' },
@@ -1375,11 +1376,25 @@ async function main() {
     { postcode: '2000', suburb: 'CBD' },
     { postcode: '2000', suburb: 'Sydney' },
     { postcode: '2001', suburb: 'CBD' },
-    // Premium Eastern Suburbs
+    // North Shore (Mosman is 2088 — not 2028; Double Bay is 2028)
+    { postcode: '2060', suburb: 'North Sydney' },
+    { postcode: '2088', suburb: 'Mosman' },
+    { postcode: '2089', suburb: 'Neutral Bay' },
+    { postcode: '2090', suburb: 'Cremorne' },
+    // Premium Eastern Suburbs / harbour
     { postcode: '2030', suburb: 'Vaucluse / Watsons Bay' },
-    { postcode: '2028', suburb: 'Mosman / Double Bay' },
+    { postcode: '2028', suburb: 'Double Bay' },
+    { postcode: '2029', suburb: 'Rose Bay' },
+    { postcode: '2027', suburb: 'Edgecliff' },
+    { postcode: '2025', suburb: 'Woollahra' },
+    { postcode: '2024', suburb: 'Bronte' },
+    { postcode: '2021', suburb: 'Paddington' },
+    { postcode: '2011', suburb: 'Potts Point' },
+    // Bondi area (2026 = Bondi Beach; many users type "Bondi" or "Bondi Beach")
     { postcode: '2026', suburb: 'Bondi' },
+    { postcode: '2026', suburb: 'Bondi Beach' },
     { postcode: '2022', suburb: 'Bondi Junction' },
+    { postcode: '2031', suburb: 'Randwick' },
   ]
 
   // One row per (postcode, suburb); do not collapse by postcode — same postcode can serve multiple suburbs.
@@ -1388,6 +1403,11 @@ async function main() {
     ...zone2Postcodes.map((z) => ({ ...z, zone: 2 as const })),
     ...zone3Postcodes.map((z) => ({ ...z, zone: 3 as const })),
   ]
+
+  // Remove legacy row: Mosman is 2088, not 2028 (Double Bay). Prevents confusion from old seeds.
+  await prisma.deliveryZone.deleteMany({
+    where: { postcode: '2028', suburb: 'Mosman / Double Bay' },
+  })
 
   // Create delivery zones (skip if already exists)
   for (const zone of allZones) {
