@@ -280,8 +280,8 @@ export async function POST(request: Request) {
         )
       }
       deliveryFee = deliveryZone.deliveryFee
-      // Determine zone type based on delivery fee
-      deliveryZoneType = deliveryFee === 15 ? 'ZONE_1' : deliveryFee === 25 ? 'ZONE_2' : deliveryFee === 35 ? 'ZONE_3' : null
+      // Two pricing tiers only: $15 (zone 1) and $25 (zone 2). Legacy $35 rows map to zone 2.
+      deliveryZoneType = deliveryFee === 15 ? 'ZONE_1' : deliveryFee > 0 ? 'ZONE_2' : null
 
       // Validate minimum order for delivery zone
       if (subtotal < deliveryZone.minimumOrder) {

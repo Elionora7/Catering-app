@@ -1310,10 +1310,9 @@ async function main() {
 
   console.log('✔ Created one demo event')
 
-  // ----- Delivery Zones (Zone 1: $15, Zone 2: $25, Zone 3: $35) -----
-  
-  // Zone 1 - Local: up to ~20 km from Punchbowl — $15 delivery fee
-  // One row per (postcode + suburb) for checkout matching; list is curated, not auto distance.
+  // ----- Delivery zones: two tiers only -----
+  // Zone 1: under ~20 km from Punchbowl — $15 | Zone 2: ~20 km and beyond — $25
+  // One row per (postcode + suburb) for checkout matching; curated lists, not live distance.
   const zone1Postcodes = [
     { postcode: '2196', suburb: 'Punchbowl' },
     // Same postcode (2196) — Roselands is Zone 1 $15 (adjacent to Punchbowl)
@@ -1355,7 +1354,7 @@ async function main() {
     { postcode: '2166', suburb: 'Greenacre' },
   ]
 
-  // Zone 2 - Standard: roughly beyond ~20 km from Punchbowl but still regular service — $25 delivery fee
+  // Zone 2: ~20 km and beyond from Punchbowl — $25 delivery fee
   const zone2Postcodes = [
     // Additional South West / Canterbury corridor
     { postcode: '2190', suburb: 'Belmore' },
@@ -1367,12 +1366,6 @@ async function main() {
     { postcode: '2195', suburb: 'Bardwell Park' },
     // Sutherland Shire
     { postcode: '2228', suburb: 'Miranda' },
-  ]
-
-  // Zone 3 - Far: Selected high-end suburbs beyond 30 min - $35 flat delivery fee
-  // Premium locations (classy areas beyond 30 min)
-  // Note: checkout matches **exact** suburb + postcode (normalized). Add common spellings as separate rows.
-  const zone3Postcodes = [
     // Sydney CBD (multiple suburb labels per postcode so customers can match how they type)
     { postcode: '2000', suburb: 'Sydney CBD (City Centre, Central, Circular Quay, The Rocks)' },
     { postcode: '2001', suburb: 'Sydney CBD (Haymarket, Chinatown)' },
@@ -1384,7 +1377,7 @@ async function main() {
     { postcode: '2088', suburb: 'Mosman' },
     { postcode: '2089', suburb: 'Neutral Bay' },
     { postcode: '2090', suburb: 'Cremorne' },
-    // Premium Eastern Suburbs / harbour
+    // Eastern Suburbs / harbour
     { postcode: '2030', suburb: 'Vaucluse / Watsons Bay' },
     { postcode: '2028', suburb: 'Double Bay' },
     { postcode: '2029', suburb: 'Rose Bay' },
@@ -1393,7 +1386,6 @@ async function main() {
     { postcode: '2024', suburb: 'Bronte' },
     { postcode: '2021', suburb: 'Paddington' },
     { postcode: '2011', suburb: 'Potts Point' },
-    // Bondi area (2026 = Bondi Beach; many users type "Bondi" or "Bondi Beach")
     { postcode: '2026', suburb: 'Bondi' },
     { postcode: '2026', suburb: 'Bondi Beach' },
     { postcode: '2022', suburb: 'Bondi Junction' },
@@ -1404,7 +1396,6 @@ async function main() {
   const allZones = [
     ...zone1Postcodes.map((z) => ({ ...z, zone: 1 as const })),
     ...zone2Postcodes.map((z) => ({ ...z, zone: 2 as const })),
-    ...zone3Postcodes.map((z) => ({ ...z, zone: 3 as const })),
   ]
 
   // Remove legacy row: Mosman is 2088, not 2028 (Double Bay). Prevents confusion from old seeds.
@@ -1418,7 +1409,7 @@ async function main() {
       where: { postcode: zone.postcode, suburb: zone.suburb },
     })
 
-    const deliveryFee = zone.zone === 1 ? 15 : zone.zone === 2 ? 25 : zone.zone === 3 ? 35 : 15 // Zone 1: $15, Zone 2: $25, Zone 3: $35
+    const deliveryFee = zone.zone === 1 ? 15 : 25 // Zone 1: $15, Zone 2: $25
     const minimumOrder = 90
 
     if (!existing) {
@@ -1445,10 +1436,15 @@ async function main() {
     }
   }
 
-  const zone1Count = allZones.filter(z => z.zone === 1).length
-  const zone2Count = allZones.filter(z => z.zone === 2).length
-  const zone3Count = allZones.filter(z => z.zone === 3).length
-  console.log(`✔ Created/updated ${allZones.length} delivery zones (Zone 1: ${zone1Count}, Zone 2: ${zone2Count}, Zone 3: ${zone3Count})`)
+  // Former $35 tier removed — normalize any legacy rows still at 35 down to $25.
+  await prisma.deliveryZone.updateMany({
+    where: { deliveryFee: 35 },
+    data: { deliveryFee: 25 },
+  })
+
+  const zone1Count = allZones.filter((z) => z.zone === 1).length
+  const zone2Count = allZones.filter((z) => z.zone === 2).length
+  console.log(`✔ Created/updated ${allZones.length} delivery zones (Zone 1 $15: ${zone1Count}, Zone 2 $25: ${zone2Count})`)
 
   console.log('🌱 Seed completed!')
 }
