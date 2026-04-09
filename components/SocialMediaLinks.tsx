@@ -1,6 +1,6 @@
 /** Official social profiles — used in footer, navbar, and mobile menu. */
 export const SOCIAL_FACEBOOK_URL = 'https://www.facebook.com/elioracatering'
-export const SOCIAL_INSTAGRAM_URL = 'https://www.instagram.com/elioracatering'
+export const SOCIAL_INSTAGRAM_URL = 'https://www.instagram.com/p/DWrydOpEzUt/'
 
 type SocialMediaLinksProps = {
   /** Extra classes on the icon row container */
