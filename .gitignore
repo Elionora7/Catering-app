@@ -38,3 +38,8 @@ next-env.d.ts
 
 # prisma — keep migrations committed for `prisma migrate deploy` in production
 
+# local docs / utility scripts not needed in repo
+Catering_App.txt
+*.ps
+*.ps1
+
