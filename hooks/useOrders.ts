@@ -74,6 +74,7 @@ export function useCreateOrder() {
       suburb?: string
       email?: string
       name?: string
+      paymentIntentId?: string
       allergiesNote?: string
       stripeFee?: number
       totalAmount?: number
@@ -98,6 +99,7 @@ export function useCreateOrder() {
           suburb: data.suburb,
           email: data.email,
           name: data.name,
+          paymentIntentId: data.paymentIntentId,
           allergiesNote: data.allergiesNote,
           stripeFee: data.stripeFee,
           totalAmount: data.totalAmount,

@@ -24,7 +24,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { error: authError } = await requireAdmin()
+    const { error: authError } = await requireAdmin(request)
     if (authError) return authError
 
     const body = await request.json()

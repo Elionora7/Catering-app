@@ -3,6 +3,9 @@ import {
   sendOrderConfirmationMails,
   type OrderConfirmationPayload,
 } from '@/lib/mailer/orderConfirmationEmail'
+import { sendConfirmationSchema } from '@/utils/validators'
+import { ZodError } from 'zod'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 /**
  * Manual / legacy resend of order confirmation (e.g. admin tools).
@@ -10,7 +13,16 @@ import {
  */
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = checkRateLimit(request, 'orders-send-confirmation')
+    if (rateLimitResponse) return rateLimitResponse
+
+    const apiKey = request.headers.get('x-api-key')
+    if (!process.env.INTERNAL_API_SECRET || apiKey !== process.env.INTERNAL_API_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
+    const validated = sendConfirmationSchema.parse(body)
     const {
       email,
       name,
@@ -38,11 +50,7 @@ export async function POST(request: Request) {
       paymentSchedule,
       finalBalanceDueDate,
       stripeFee,
-    } = body
-
-    if (!email || !name) {
-      return NextResponse.json({ error: 'Email and name are required' }, { status: 400 })
-    }
+    } = validated
 
     const sub = Number(subtotal ?? 0)
     const df = Number(deliveryFee ?? 0)
@@ -78,7 +86,7 @@ export async function POST(request: Request) {
       subtotal: sub,
       deliveryFee: df,
       orderType: orderType === 'EVENT' ? 'EVENT' : 'STANDARD',
-      deliveryDate,
+      deliveryDate: deliveryDate ?? '',
       deliveryTime,
       deliveryType: deliveryType === 'delivery' ? 'DELIVERY' : deliveryType === 'pickup' ? 'PICKUP' : String(deliveryType ?? 'DELIVERY'),
       streetAddress,
@@ -108,7 +116,13 @@ export async function POST(request: Request) {
             : 'Confirmation email could not be sent (see server logs)',
     })
   } catch (error: any) {
-    console.error('[orders/send-confirmation] Error:', error)
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      )
+    }
+    console.error('[orders/send-confirmation] Error:', error?.message || 'Unknown error')
     return NextResponse.json(
       { error: error.message || 'Failed to process confirmation request' },
       { status: 500 }

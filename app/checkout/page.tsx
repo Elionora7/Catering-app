@@ -536,35 +536,6 @@ function CheckoutPageContent() {
         setError('Please complete the Stripe payment first')
         return
       }
-      
-      // Verify payment intent status
-      try {
-        const response = await fetch('/api/payments/confirm', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ paymentIntentId: stripePaymentIntentId }),
-        })
-
-        if (!response.ok) {
-          const error = await response.json()
-          setError(error.error || 'Payment verification failed')
-          return
-        }
-
-        const paymentData = await response.json()
-        if (paymentData.status !== 'succeeded') {
-          setStripePaymentSucceeded(false)
-          setError('Payment was not successful. Please try again.')
-          return
-        }
-      } catch (err: any) {
-        setStripePaymentSucceeded(false)
-        setError('Failed to verify payment. Please try again.')
-        return
-      }
     }
 
     setError('')
@@ -586,6 +557,7 @@ function CheckoutPageContent() {
         deliveryType: formData.deliveryType.toUpperCase(),
         email: formData.email.trim(),
         name: formData.name.trim(),
+        paymentIntentId: stripePaymentIntentId,
         stripeFee: formData.paymentMethod === 'stripe' ? stripeFee : 0,
         totalAmount: formData.paymentMethod === 'stripe' ? finalTotal : total,
       }
@@ -2071,122 +2043,16 @@ function CheckoutPageContent() {
                                   setError(consentError)
                                   return
                                 }
-                                // Verify payment intent status before proceeding
-                                try {
-                                  const verifyResponse = await fetch('/api/payments/confirm', {
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                    },
-                                    credentials: 'include',
-                                    body: JSON.stringify({ paymentIntentId }),
+                                setStripePaymentIntentId(paymentIntentId)
+                                setStripePaymentSucceeded(true)
+                                setError('')
+
+                                if (!stripeAutoSubmitTriggeredRef.current) {
+                                  stripeAutoSubmitTriggeredRef.current = true
+                                  setCurrentStep(3)
+                                  requestAnimationFrame(() => {
+                                    checkoutFormRef.current?.requestSubmit()
                                   })
-
-                                  if (!verifyResponse.ok) {
-                                    const errorData = await verifyResponse.json()
-                                    setError(errorData.error || 'Payment verification failed')
-                                    return
-                                  }
-
-                                  const paymentData = await verifyResponse.json()
-                                  if (paymentData.status !== 'succeeded') {
-                                    setError('Payment was not successful. Please try again.')
-                                    return
-                                  }
-
-                                  // Payment verified - store payment intent ID
-                                  setStripePaymentIntentId(paymentIntentId)
-                                  setStripePaymentSucceeded(true)
-                                  setError('') // Clear any errors
-
-                                  // If only prebookings (no meal items), process immediately and redirect
-                                  if (items.length === 0 && selectedPrebookings.length > 0) {
-                                    // Use requestAnimationFrame to ensure React has finished rendering before async operations
-                                    requestAnimationFrame(async () => {
-                                      setIsSubmitting(true)
-                                      try {
-                                      // Confirm prebookings
-                                      console.log('Confirming prebookings after payment:', selectedPrebookings.map(pb => pb.id))
-                                      await Promise.all(
-                                        selectedPrebookings.map(prebooking =>
-                                          updatePrebooking.mutateAsync({
-                                            id: prebooking.id,
-                                            data: {
-                                              status: 'CONFIRMED',
-                                            },
-                                          })
-                                        )
-                                      )
-                                      console.log('Prebookings confirmed successfully')
-
-                                      // Send confirmation email
-                                      try {
-                                        console.log('Sending confirmation email to:', formData.email.trim())
-                                        const emailData = {
-                                          email: formData.email.trim(),
-                                          name: formData.name.trim(),
-                                          phoneNumber: formData.phoneNumber.trim(),
-                                          orderId: null,
-                                          prebookingIds: selectedPrebookings.map(pb => pb.id),
-                                          items: [],
-                                          prebookings: selectedPrebookings.map(pb => ({
-                                            eventName: pb.event?.name || 'Event',
-                                            guestCount: pb.guestCount,
-                                            total: calculatePrebookingTotal(pb.specialRequests),
-                                          })),
-                                          totalAmount: prebookingsSubtotal + eventsDeliveryFees,
-                                          deliveryDate: '',
-                                          deliveryTime: '',
-                                          deliveryType: '',
-                                          streetAddress: formData.streetAddress,
-                                          unitNumber: formData.unitNumber,
-                                          suburb: formData.suburb,
-                                          state: formData.state,
-                                          postcode: formData.postcode,
-                                        }
-                                        
-                                        const emailResponse = await fetch('/api/orders/send-confirmation', {
-                                          method: 'POST',
-                                          headers: {
-                                            'Content-Type': 'application/json',
-                                          },
-                                          credentials: 'include',
-                                          body: JSON.stringify(emailData),
-                                        })
-
-                                        const emailResult = await emailResponse.json()
-                                        if (!emailResponse.ok) {
-                                          console.error('Failed to send confirmation email:', emailResult)
-                                        } else {
-                                          console.log('Confirmation email sent successfully:', emailResult)
-                                        }
-                                      } catch (emailError) {
-                                        console.error('Error sending confirmation email:', emailError)
-                                        // Don't fail the order if email fails
-                                      }
-
-                                        // Redirect to success page after a brief delay to ensure component state is stable
-                                        setTimeout(() => {
-                                          router.push(`/?success=true&payment=${paymentIntentId}&prebookings=confirmed`)
-                                        }, 100)
-                                      } catch (err: any) {
-                                        setError(err.message || 'Failed to confirm prebookings')
-                                        setIsSubmitting(false)
-                                      }
-                                    })
-                                  } else {
-                                    // For meal items, auto-submit order immediately after successful Stripe payment.
-                                    if (!stripeAutoSubmitTriggeredRef.current) {
-                                      stripeAutoSubmitTriggeredRef.current = true
-                                      setCurrentStep(3)
-                                      requestAnimationFrame(() => {
-                                        checkoutFormRef.current?.requestSubmit()
-                                      })
-                                    }
-                                  }
-                                } catch (err: any) {
-                                  setError('Failed to verify payment. Please try again.')
-                                  console.error('Payment verification error:', err)
                                 }
                               }}
                               onPaymentError={(errorMessage) => {

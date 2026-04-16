@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
+import Stripe from 'stripe'
 import { shouldChargeBainMarieServiceFee } from '@/lib/dipTrayCombo'
 import { prisma } from '@/lib/prisma'
 import { findActiveDeliveryZone } from '@/lib/deliveryZoneLookup'
 import { requireAuth } from '@/lib/auth-helpers'
 import { authOptions } from '@/lib/auth'
+import { stripe } from '@/lib/stripe'
 import { createOrderSchema } from '@/utils/validators'
 import {
   BAIN_MARIE_SERVICE_FEE,
@@ -28,6 +30,7 @@ import { getMealMinimumQuantity } from '@/lib/categoryMinimums'
 import { formatOrderItemDisplayName } from '@/lib/foodWarmerCopy'
 import { ZodError } from 'zod'
 import bcrypt from 'bcryptjs'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 /** Allow time for in-request SMTP (Vercel caps by plan; Pro+ can use 60). */
 export const maxDuration = 60
@@ -74,6 +77,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = checkRateLimit(request, 'orders')
+    if (rateLimitResponse) return rateLimitResponse
+
     const body = await request.json()
     const validatedData = createOrderSchema.parse(body)
 
@@ -351,6 +357,50 @@ export async function POST(request: Request) {
     const bankPartialDeposit =
       paymentMethod === 'BANK_TRANSFER' && isBankPartialDepositTier(pricing.baseTotal)
 
+    let verifiedStripePaymentIntent: Stripe.PaymentIntent | null = null
+    if (paymentMethod === 'STRIPE') {
+      if (!validatedData.paymentIntentId) {
+        return NextResponse.json(
+          { error: 'Payment intent ID is required for Stripe orders' },
+          { status: 400 }
+        )
+      }
+
+      verifiedStripePaymentIntent = await stripe.paymentIntents.retrieve(validatedData.paymentIntentId)
+      if (verifiedStripePaymentIntent.status !== 'succeeded') {
+        return NextResponse.json(
+          { error: 'Stripe payment has not completed successfully' },
+          { status: 400 }
+        )
+      }
+      if (verifiedStripePaymentIntent.amount !== Math.round(pricing.finalTotal * 100)) {
+        return NextResponse.json(
+          { error: 'Stripe payment amount does not match this order' },
+          { status: 400 }
+        )
+      }
+
+      const expectedUserId = session?.user?.id ?? 'guest'
+      if (verifiedStripePaymentIntent.metadata.userId !== expectedUserId) {
+        return NextResponse.json(
+          { error: 'Stripe payment does not belong to this checkout session' },
+          { status: 400 }
+        )
+      }
+
+      if (
+        expectedUserId === 'guest' &&
+        validatedData.email?.trim() &&
+        verifiedStripePaymentIntent.metadata.userEmail &&
+        verifiedStripePaymentIntent.metadata.userEmail !== validatedData.email.trim()
+      ) {
+        return NextResponse.json(
+          { error: 'Stripe payment does not match checkout email' },
+          { status: 400 }
+        )
+      }
+    }
+
     let depositAmount: number
     let remainingAmount: number
     if (paymentMethod === 'STRIPE') {
@@ -364,14 +414,17 @@ export async function POST(request: Request) {
       remainingAmount = 0
     }
     const allergiesNote = validatedData.allergiesNote?.trim() || null
-    const initialStatus = paymentMethod === 'BANK_TRANSFER' ? 'PENDING_PAYMENT' : 'CONFIRMED'
+    const initialStatus =
+      paymentMethod === 'STRIPE' && verifiedStripePaymentIntent
+        ? 'CONFIRMED'
+        : 'PENDING_PAYMENT'
 
     const finalBalanceDueDate =
       bankPartialDeposit ? getFinalBalanceDueDate(deliveryDateTime) : null
     const expiresAt = paymentMethod === 'BANK_TRANSFER'
       ? new Date(Date.now() + 24 * 60 * 60 * 1000)
       : null
-    const depositPaid = paymentMethod === 'STRIPE'
+    const depositPaid = Boolean(paymentMethod === 'STRIPE' && verifiedStripePaymentIntent)
 
     // Get isEventConfirmed from validated data (for Event orders)
     const isEventConfirmed = validatedData.orderType === 'EVENT' ? (validatedData.isEventConfirmed ?? false) : false
@@ -445,26 +498,6 @@ export async function POST(request: Request) {
       },
     })
 
-    if (paymentMethod === 'STRIPE') {
-      console.log('[StripeAutoConfirm] Order confirmed after successful Stripe payment', {
-        orderId: order.id,
-        status: order.status,
-        depositPaid: (order as any).depositPaid,
-        depositAmount: (order as any).depositAmount,
-      })
-    }
-
-    console.log('[orders] Payment audit', {
-      orderId: order.id,
-      paymentSchedule: schedule,
-      paymentMethod,
-      baseTotal: pricing.baseTotal,
-      totalAmount: order.totalAmount,
-      depositAmount: order.depositAmount,
-      remainingAmount: order.remainingAmount,
-      bankPartialDeposit,
-    })
-
     // Customer confirmation uses the email from the request body, not env vars.
     // Fallback to the linked User row when the client omits email/name (e.g. some logged-in flows).
     const customerEmail =
@@ -475,13 +508,6 @@ export async function POST(request: Request) {
       const fromUser = order.user?.name
       return fromUser != null && String(fromUser).trim() ? String(fromUser).trim() : ''
     })()
-
-    console.log('[orders] New order created:', {
-      orderId: order.id,
-      customerEmail,
-      totalAmount: order.totalAmount,
-      paymentMethod: order.paymentMethod,
-    })
 
     const emailPayload = {
       orderId: order.id,
@@ -522,7 +548,6 @@ export async function POST(request: Request) {
     // On Vercel serverless, work scheduled in `after()` can be cut off when the isolate freezes
     // after the response is sent — customer confirmation then never sends reliably.
     if (customerEmail && customerName) {
-      console.log('[orders] Sending customer confirmation to:', customerEmail, '(order', order.id + ')')
       let emailStatus: 'SENT' | 'FAILED' = 'FAILED'
       try {
         const dispatch = await sendOrderConfirmationMails(emailPayload)
@@ -545,16 +570,9 @@ export async function POST(request: Request) {
         console.error(`[orders] Failed to persist emailStatus for order ${order.id}`, updateErr)
       }
     } else {
-      console.warn(
-        '[orders] No customer email/name resolved (body + user fallback); skipping customer confirmation email',
-        {
-          orderId: order.id,
-          bodyEmail: validatedData.email?.trim() || null,
-          userEmail: order.user?.email || null,
-          bodyName: validatedData.name?.trim() || null,
-          userName: order.user?.name || null,
-        }
-      )
+      console.warn('[orders] No customer email/name resolved; skipping customer confirmation email', {
+        orderId: order.id,
+      })
     }
 
     try {

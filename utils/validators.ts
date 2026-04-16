@@ -234,6 +234,7 @@ export const createOrderSchema = z.object({
   paymentMethod: z.enum(['STRIPE', 'BANK_TRANSFER'], {
     errorMap: () => ({ message: 'Payment method must be STRIPE or BANK_TRANSFER' }),
   }),
+  paymentIntentId: z.string().min(1, 'Payment intent ID is required').optional(),
 })
 
 export const updateOrderStatusSchema = z.object({
@@ -316,6 +317,65 @@ export const quoteRequestSchema = z.object({
     .array(quoteCartLineItemSchema)
     .optional()
     .default([]),
+})
+
+export const createPaymentIntentSchema = z.object({
+  items: z
+    .array(orderItemSchema)
+    .min(1, 'At least one item is required')
+    .max(50, 'Maximum 50 items per request'),
+  deliveryType: z.enum(['delivery', 'pickup']),
+  postcode: z.preprocess(
+    (v) => (v === '' || v === null || v === undefined ? undefined : v),
+    z
+      .string()
+      .regex(australianPostcodeRegex, 'Postcode must be exactly 4 digits (Australian format)')
+      .optional()
+  ),
+  suburb: z.preprocess(
+    (v) => (v === '' || v === null || v === undefined ? undefined : v),
+    z.string().min(1).max(200).optional()
+  ),
+  totalAmount: z.number().positive().optional(),
+  currency: z.string().min(3).max(3).optional().default('aud'),
+  email: z.string().email().optional(),
+  name: z.string().min(1).max(200).optional(),
+  metadata: z.record(z.string(), z.string().max(200)).optional().default({}),
+})
+
+const confirmationItemSchema = z.object({
+  name: z.string().min(1).max(300),
+  quantity: z.number().int().min(0).max(1000),
+  price: z.number().min(0).max(100000),
+})
+
+export const sendConfirmationSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(200),
+  phoneNumber: z.string().max(40).optional(),
+  orderId: z.string().max(100).optional().nullable(),
+  items: z.array(confirmationItemSchema).max(100).optional().default([]),
+  totalAmount: z.number().min(0).max(100000),
+  subtotal: z.number().min(0).max(100000).optional(),
+  deliveryFee: z.number().min(0).max(100000).optional(),
+  orderType: z.enum(['STANDARD', 'EVENT']).optional(),
+  deliveryDate: z.union([z.string(), z.date()]).optional(),
+  deliveryTime: z.string().max(100).optional(),
+  deliveryType: z.string().max(20).optional(),
+  streetAddress: z.string().max(300).optional(),
+  unitNumber: z.string().max(80).optional(),
+  suburb: z.string().max(200).optional(),
+  state: z.string().max(30).optional(),
+  postcode: z.string().max(10).optional(),
+  paymentMethod: z.enum(['STRIPE', 'BANK_TRANSFER']).optional(),
+  depositAmount: z.number().min(0).max(100000).optional(),
+  remainingAmount: z.number().min(0).max(100000).optional(),
+  depositRequired: z.boolean().optional(),
+  bankPartialDeposit: z.boolean().optional(),
+  baseTotal: z.number().min(0).max(100000).optional(),
+  paymentSchedule: z.enum(['FULL_STRIPE', 'FULL_BANK', 'BANK_PARTIAL']).optional(),
+  finalBalanceDueDate: z.string().max(100).nullable().optional(),
+  stripeFee: z.number().min(0).max(100000).optional(),
 })
 
 // ============================================================================

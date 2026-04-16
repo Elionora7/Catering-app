@@ -39,43 +39,13 @@ export async function requireAuth(request?: Request | NextRequest): Promise<Auth
   }
 
   try {
-    // Extract cookies for logging
-    const cookieHeader = request.headers.get('cookie') || ''
-    console.log('[requireAuth] Cookie header present:', !!cookieHeader)
-    
-    if (cookieHeader) {
-      // Check for NextAuth session token cookie
-      const hasNextAuthCookie = cookieHeader.includes('next-auth.session-token') || 
-                                cookieHeader.includes('__Secure-next-auth.session-token') ||
-                                cookieHeader.includes('__Host-next-auth.session-token')
-      console.log('[requireAuth] NextAuth cookie found:', hasNextAuthCookie)
-      if (hasNextAuthCookie) {
-        console.log('[requireAuth] Cookie value preview:', cookieHeader.substring(0, 150))
-      }
-    }
-    
     // Use getToken with the request and secret (as per template)
     const token = await getToken({
       req: request instanceof NextRequest ? request : (request as any),
       secret: process.env.NEXTAUTH_SECRET,
     })
 
-    console.log('[requireAuth] Token retrieved:', token ? 'Yes' : 'No')
-    if (token) {
-      console.log('[requireAuth] Token contents:', {
-        id: token.id,
-        email: token.email,
-        role: token.role,
-        sub: token.sub,
-        hasId: !!token.id,
-        hasRole: !!token.role,
-      })
-    } else {
-      console.log('[requireAuth] No token found - cookies:', cookieHeader.substring(0, 200))
-    }
-
     if (!token) {
-      console.log('[requireAuth] Token validation failed - no token returned')
       return {
         error: NextResponse.json(
           { error: 'Unauthorized' },
@@ -87,7 +57,6 @@ export async function requireAuth(request?: Request | NextRequest): Promise<Auth
 
     // Validate required token fields
     if (!token.id && !token.sub) {
-      console.log('[requireAuth] Token missing id/sub:', token)
       return {
         error: NextResponse.json(
           { error: 'Unauthorized - Invalid token' },
@@ -114,11 +83,7 @@ export async function requireAuth(request?: Request | NextRequest): Promise<Auth
       session, // Keep for backward compatibility
     }
   } catch (error) {
-    console.error('[requireAuth] Error getting session:', error)
-    if (error instanceof Error) {
-      console.error('[requireAuth] Error message:', error.message)
-      console.error('[requireAuth] Error stack:', error.stack)
-    }
+    console.error('[requireAuth] Error getting session')
     return {
       error: NextResponse.json(
         { error: 'Unauthorized' },
@@ -174,7 +139,7 @@ export async function requireAdmin(request?: Request | NextRequest): Promise<Adm
 
     return { error: null }
   } catch (error) {
-    console.error('Error getting session in requireAdmin:', error)
+    console.error('Error getting session in requireAdmin')
     return {
       error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
     }

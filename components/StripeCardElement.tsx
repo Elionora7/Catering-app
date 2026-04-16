@@ -116,24 +116,10 @@ export function StripeCardElement({
         name: nameOnCard,
       }
 
-      console.log('Confirming payment with clientSecret:', clientSecret?.substring(0, 20) + '...')
       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
         clientSecret,
         confirmParams
       )
-
-      console.log('Payment confirmation result:', {
-        error: confirmError ? {
-          type: confirmError.type,
-          code: confirmError.code,
-          message: confirmError.message,
-        } : null,
-        paymentIntent: paymentIntent ? {
-          id: paymentIntent.id,
-          status: paymentIntent.status,
-          amount: paymentIntent.amount,
-        } : null,
-      })
 
       if (confirmError) {
         // Handle payment errors (declined cards, etc.)
@@ -188,14 +174,10 @@ export function StripeCardElement({
 
       // Check if payment actually succeeded
       if (paymentIntent.status === 'succeeded') {
-        // Payment succeeded
-        console.log('Payment succeeded! Payment Intent ID:', paymentIntent.id)
         setPaymentStatus('success')
         setError(null)
         onPaymentSuccess?.(paymentIntent.id)
       } else if (paymentIntent.status === 'processing') {
-        // Payment is processing (3D Secure or similar)
-        console.log('Payment is processing. Payment Intent ID:', paymentIntent.id)
         setPaymentStatus('processing')
         setError('Your payment is being processed. Please wait...')
         // Wait a moment and check status again
@@ -232,7 +214,6 @@ export function StripeCardElement({
         } else {
           errorMessage = `Payment status: ${paymentIntent.status}. Payment was not successful.`
         }
-        console.error('Payment failed with status:', paymentIntent.status, 'Payment Intent ID:', paymentIntent.id)
         setError(errorMessage)
         setPaymentStatus('failed')
         onPaymentError?.(errorMessage)

@@ -3,12 +3,15 @@ import { getServerSession } from 'next-auth/next'
 import Stripe from 'stripe'
 import { authOptions } from '@/lib/auth'
 import { stripe } from '@/lib/stripe'
+import { checkRateLimit } from '@/lib/rateLimit'
 import {
   computeOrderPricing,
   OrderPricingUserError,
   StaleCartMealsError,
 } from '@/lib/orderPricing'
 import { requiresOnlineQuote } from '@/lib/paymentRules'
+import { createPaymentIntentSchema } from '@/utils/validators'
+import { ZodError } from 'zod'
 
 function isStaleCartMealsError(e: unknown): e is StaleCartMealsError {
   return e instanceof StaleCartMealsError || (e instanceof Error && e.name === 'StaleCartMealsError')
@@ -20,24 +23,28 @@ function isOrderPricingUserError(e: unknown): e is OrderPricingUserError {
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = checkRateLimit(request, 'payments-create-intent')
+    if (rateLimitResponse) return rateLimitResponse
+
     const body = await request.json()
-    const { currency = 'aud', metadata = {}, email, name } = body
+    const validatedData = createPaymentIntentSchema.parse(body)
+    const { currency = 'aud', metadata = {}, email, name } = validatedData
 
     const session = await getServerSession(authOptions)
     const userId = session?.user?.id ?? null
     const userEmail = session?.user?.email || email || ''
 
-    const deliveryType = body.deliveryType === 'pickup' ? 'PICKUP' : 'DELIVERY'
+    const deliveryType = validatedData.deliveryType === 'pickup' ? 'PICKUP' : 'DELIVERY'
     const pricing = await computeOrderPricing({
-      items: body.items || [],
+      items: validatedData.items || [],
       deliveryType,
-      postcode: body.postcode,
-      suburb: body.suburb,
+      postcode: validatedData.postcode,
+      suburb: validatedData.suburb,
       paymentMethod: 'STRIPE',
     })
     // Amount charged is always server-computed from cart lines + delivery (DB prices).
     // Log client hint only — strict mismatch checks caused false 400s (rounding, pickup fee state, etc.).
-    const frontendTotal = Number(body.totalAmount)
+    const frontendTotal = Number(validatedData.totalAmount)
     if (
       Number.isFinite(frontendTotal) &&
       Math.abs(frontendTotal - pricing.finalTotal) > 0.02 &&
@@ -93,16 +100,12 @@ export async function POST(request: Request) {
         baseTotal: pricing.baseTotal.toFixed(2),
         stripeFee: pricing.stripeFee.toFixed(2),
         finalTotal: pricing.finalTotal.toFixed(2),
-        ...metadata,
+        ...Object.fromEntries(
+          Object.entries(metadata)
+            .filter(([key, value]) => key.length <= 40 && typeof value === 'string')
+            .slice(0, 20)
+        ),
       },
-    })
-
-    console.log('Created payment intent:', {
-      id: paymentIntent.id,
-      status: paymentIntent.status,
-      amount_cents: paymentIntent.amount,
-      amount_dollars: (paymentIntent.amount / 100).toFixed(2),
-      client_secret: paymentIntent.client_secret?.substring(0, 20) + '...',
     })
 
     return NextResponse.json({
@@ -110,6 +113,12 @@ export async function POST(request: Request) {
       paymentIntentId: paymentIntent.id,
     })
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      )
+    }
     if (isStaleCartMealsError(error)) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
@@ -143,14 +152,7 @@ export async function POST(request: Request) {
     }
 
     const err = error as { message?: string; type?: string; code?: string; statusCode?: number; stack?: string }
-    console.error('Error creating payment intent:', error)
-    console.error('Error details:', {
-      message: err.message,
-      type: err.type,
-      code: err.code,
-      statusCode: err.statusCode,
-      stack: err.stack,
-    })
+    console.error('Error creating payment intent:', err.message || 'Unknown error')
 
     const errorMessage = err.message || 'Failed to create payment intent'
     const errorDetails = err.type ? `${err.type}: ${errorMessage}` : errorMessage

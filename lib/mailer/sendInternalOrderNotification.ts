@@ -182,7 +182,6 @@ export async function sendInternalOrderNotification(payload: InternalOrderNotifi
 
   if (!transport || !from) {
     console.warn('[internalOrderNotification] SMTP not configured; skipping internal notification')
-    console.log('[internalOrderNotification] Would send to:', recipients.join(', '), 'order:', payload.orderId)
     return
   }
 
@@ -200,7 +199,7 @@ export async function sendInternalOrderNotification(payload: InternalOrderNotifi
       html,
       ...(envelope ? { envelope } : {}),
     })
-    console.log(`[internalOrderNotification] Sent for order ${payload.orderId} → ${recipients.join(', ')}`)
+    console.log(`[internalOrderNotification] Sent for order ${payload.orderId}`)
   } catch (err) {
     console.error(`[internalOrderNotification] FAILED for order ${payload.orderId}`, err)
   }

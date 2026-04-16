@@ -5,6 +5,11 @@ import { stripe } from '@/lib/stripe'
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { paymentIntentId } = body
 
@@ -15,26 +20,14 @@ export async function POST(request: Request) {
       )
     }
 
-    const session = await getServerSession(authOptions)
-
     // Retrieve the payment intent
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
 
-    // Verify payment intent belongs to user (if authenticated) or is a guest payment
-    if (session && session.user) {
-      // Authenticated user - verify ownership
-      if (paymentIntent.metadata.userId !== session.user.id && paymentIntent.metadata.userId !== 'guest') {
-        return NextResponse.json(
-          { error: 'Unauthorized - Payment intent does not belong to user' },
-          { status: 403 }
-        )
-      }
-    } else {
-      // Guest checkout - verify it's a guest payment or matches provided email
-      if (paymentIntent.metadata.userId && paymentIntent.metadata.userId !== 'guest') {
-        // This payment intent was created by an authenticated user, but current request is not authenticated
-        // Allow it to proceed - the payment intent itself is valid
-      }
+    if (paymentIntent.metadata.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
+      )
     }
 
     // Return payment intent status
@@ -45,7 +38,7 @@ export async function POST(request: Request) {
       currency: paymentIntent.currency,
     })
   } catch (error: any) {
-    console.error('Error confirming payment:', error)
+    console.error('Error confirming payment:', error?.message || 'Unknown error')
     return NextResponse.json(
       { error: error.message || 'Failed to confirm payment' },
       { status: 500 }

@@ -369,16 +369,11 @@ export async function sendOrderConfirmationMails(
     console.warn(
       '[orderConfirmationEmail] SMTP not configured (need SMTP_HOST and EMAIL_FROM/SMTP_FROM or SMTP_USER). Preview only.'
     )
-    console.log('[orderConfirmationEmail] Would send to:', to)
-    console.log('[orderConfirmationEmail] Order:', payload.orderId, 'total:', payload.totalAmount)
     return 'SKIPPED_NO_SMTP'
   }
 
   let customerSent = false
   try {
-    console.log(
-      `[orderConfirmationEmail] Sending customer confirmation → ${to} (order ${payload.orderId})`
-    )
     const envelope = buildSmtpEnvelope(to)
     const info = await sendMailWithLogging(transport, {
       from,
@@ -390,13 +385,13 @@ export async function sendOrderConfirmationMails(
       ...(envelope ? { envelope } : {}),
     })
     customerSent = true
-    console.log(`[orderConfirmationEmail] Email sent successfully for order ${payload.orderId} → ${to}`, {
+    console.log(`[orderConfirmationEmail] Email sent successfully for order ${payload.orderId}`, {
       messageId: info.messageId,
       accepted: info.accepted,
       rejected: info.rejected,
     })
   } catch (error) {
-    console.error(`[orderConfirmationEmail] Email FAILED for order ${payload.orderId} → ${to}`, error)
+    console.error(`[orderConfirmationEmail] Email FAILED for order ${payload.orderId}`, error)
   }
 
   return customerSent ? 'SENT' : 'FAILED'

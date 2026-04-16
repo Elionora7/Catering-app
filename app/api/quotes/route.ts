@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { findActiveDeliveryZone } from '@/lib/deliveryZoneLookup'
 import { sendQuoteRequestNotification } from '@/lib/mailer/sendQuoteRequestNotification'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { quoteRequestSchema } from '@/utils/validators'
 import { ZodError } from 'zod'
 
@@ -16,6 +17,9 @@ function isSydneyPostcode(postcode: string): boolean {
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = checkRateLimit(request, 'quotes')
+    if (rateLimitResponse) return rateLimitResponse
+
     const body = await request.json()
     const validatedData = quoteRequestSchema.parse(body)
     const estimatedGuests = validatedData.estimatedGuests ?? null

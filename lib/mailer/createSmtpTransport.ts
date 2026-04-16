@@ -81,7 +81,6 @@ export async function sendMailWithLogging(
   transporter: nodemailer.Transporter,
   options: nodemailer.SendMailOptions
 ): Promise<SentMessageInfo> {
-  console.log('[mailer] Sending email via:', process.env.SMTP_HOST, process.env.SMTP_PORT)
   try {
     const result = await transporter.sendMail(options)
     console.log('[mailer] Email sent successfully')
