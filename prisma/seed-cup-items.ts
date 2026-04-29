@@ -45,7 +45,7 @@ const CUP_ITEMS = [
   {
     name: 'Vine Leaves Cup (2 pieces - Vegetarian)',
     description: 'Cup with 2 stuffed vine leaves (vegetarian).',
-    price: 6.50,
+    price: 6.00,
     category: 'Finger Food',
     pricingType: 'PER_ITEM' as const,
     mealType: 'BOTH' as const,

@@ -39,7 +39,7 @@ async function main() {
   const vineLeavesCup = await prisma.meal.updateMany({
     where: { name: 'Vine Leaves Cup (2 pieces - Vegetarian)' },
     data: {
-      price: 6.5,
+      price: 6.0,
     },
   })
 

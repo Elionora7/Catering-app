@@ -15,6 +15,7 @@
     "db:seed:prod": "cross-env PRISMA_SEED_USE_PRODUCTION=true tsx prisma/seed.ts",
     "db:seed-cups": "tsx prisma/seed-cup-items.ts",
     "db:patch-prices": "tsx prisma/patch-meal-prices.ts",
+    "db:patch-meal-catalog": "tsx prisma/patch-meal-catalog-prices.ts",
     "db:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts"
   },

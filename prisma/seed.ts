@@ -412,7 +412,7 @@ async function main() {
     {
       name: 'Salmon Mini Bagel',
       description: 'Smoked salmon on a mini bagel',
-      price: 7.50,
+      price: 7.00,
       category: 'Finger Food',
       pricingType: 'PER_ITEM' as const,
       mealType: 'BOTH' as const,
@@ -506,7 +506,7 @@ async function main() {
     {
       name: 'Vine Leaves Cup (2 pieces - Vegetarian)',
       description: 'Cup with 2 stuffed vine leaves (vegetarian).',
-      price: 6.50,
+      price: 6.00,
       category: 'Finger Food',
       pricingType: 'PER_ITEM' as const,
       mealType: 'BOTH' as const,
@@ -1231,7 +1231,7 @@ async function main() {
     {
       name: 'Granola (Muesli, Yogurt & Fruit)',
       description: 'Fresh granola with yogurt and fruit',
-      price: 6.50,
+      price: 6.00,
       category: 'Desserts & Cups',
       pricingType: 'PER_ITEM' as const,
       mealType: 'BOTH' as const,
@@ -1240,7 +1240,7 @@ async function main() {
     {
       name: 'Fruit Cups',
       description: 'Fresh mixed fruit in a cup',
-      price: 6.50,
+      price: 6.00,
       category: 'Desserts & Cups',
       pricingType: 'PER_ITEM' as const,
       mealType: 'BOTH' as const,
@@ -1251,20 +1251,17 @@ async function main() {
     {
       name: 'Salad Cup',
       description: 'Choose Garden Salad, Fattoush or Tabouli',
-      price: 6.50,
+      price: 6.00,
       category: 'Desserts & Cups',
-      pricingType: 'SIZED' as const,
+      pricingType: 'PER_ITEM' as const,
       mealType: 'BOTH' as const,
-      priceSmall: 6.50,
-      priceMedium: 6.50,
-      priceLarge: 6.50,
       isVegetarian: true,
       isVegan: true,
     },
     {
       name: 'Cheesecake',
       description: 'Creamy cheesecake slice',
-      price: 7.50,
+      price: 7.00,
       category: 'Desserts & Cups',
       pricingType: 'PER_ITEM' as const,
       mealType: 'BOTH' as const,
@@ -1273,7 +1270,7 @@ async function main() {
     {
       name: 'Strawberry Tart',
       description: 'Fresh strawberry tart',
-      price: 7.50,
+      price: 7.00,
       category: 'Desserts & Cups',
       pricingType: 'PER_ITEM' as const,
       mealType: 'BOTH' as const,
