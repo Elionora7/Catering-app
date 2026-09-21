@@ -41,6 +41,20 @@ function usesSizeVariant(meal: Meal) {
   return meal.pricingType === 'SIZED' || isBbqBainMarieEligibleMeal(meal)
 }
 
+/** True when this SIZED cart size still has a priced column on the live meal (null = discontinued). */
+function isOfferedSizedOption(
+  meal: Meal,
+  size: CartItem['size']
+): boolean {
+  if (meal.pricingType !== 'SIZED') return true
+  if (!size) return false
+  if (size === 'SMALL') return meal.priceSmall != null
+  if (size === 'MEDIUM') return meal.priceMedium != null
+  if (size === 'LARGE') return meal.priceLarge != null
+  if (size === 'BAIN_MARIE') return meal.priceBainMarie != null
+  return false
+}
+
 /** Drop cart lines whose meal ids are not in the current menu (available), refresh meal snapshots. */
 async function sanitizeCartWithMenu(
   rawItems: CartItem[]
@@ -57,6 +71,7 @@ async function sanitizeCartWithMenu(
       if (!item?.mealId) continue
       const fresh = mealById.get(item.mealId)
       if (!fresh) continue
+      if (!isOfferedSizedOption(fresh, item.size ?? null)) continue
       const minQty = getMealMinimumQuantity(fresh)
       const qty = typeof item.quantity === 'number' ? item.quantity : 0
       const quantity = qty > 0 && qty < minQty ? minQty : qty

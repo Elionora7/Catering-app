@@ -20,6 +20,10 @@ export function MealCard({ meal, index = 0 }: MealCardProps) {
 
   const isSaladCup = meal.name.toLowerCase().includes('salad cup')
   const isDipTrayCombo = isDipTrayComboMeal(meal)
+  /** Named dips start at Large Dip (`priceLarge`); other SIZED meals still use `priceSmall` when set. */
+  const sizedFromPrice = isDipTrayCombo
+    ? meal.priceLarge ?? meal.priceSmall ?? null
+    : meal.priceSmall ?? (meal.pricingType === 'SIZED' ? meal.priceLarge ?? null : null)
   const isBbqBainMarieEligible = isBbqBainMarieEligibleMeal(meal)
   const isCheesecakeImage = meal.name.toLowerCase().includes('cheesecake')
 
@@ -294,8 +298,8 @@ export function MealCard({ meal, index = 0 }: MealCardProps) {
               <p className="text-[#D4AF37] font-bold text-lg">
                 {meal.pricingType === 'PER_PERSON' 
                   ? `$${meal.price.toFixed(2)} per person`
-                  : meal.pricingType === 'SIZED' && meal.priceSmall
-                  ? `From $${meal.priceSmall.toFixed(2)}`
+                  : meal.pricingType === 'SIZED' && sizedFromPrice
+                  ? `From $${sizedFromPrice.toFixed(2)}`
                   : meal.pricingType === 'PER_DOZEN'
                   ? `$${meal.price.toFixed(2)} per dozen`
                   : meal.pricingType === 'PER_SKEWER'

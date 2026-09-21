@@ -12,7 +12,7 @@ export type CartSize = 'SMALL' | 'MEDIUM' | 'LARGE' | 'BAIN_MARIE'
 
 /**
  * Human-readable size / serving line for cart, checkout, and emails.
- * For dip combos, BAIN_MARIE is “Large tray”, not the food warmer add-on.
+ * For named Dips, BAIN_MARIE is the tray option, not the food warmer add-on.
  */
 export function cartLineSizeLabel(
   meal: Pick<Meal, 'name' | 'category' | 'pricingType'>,

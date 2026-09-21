@@ -22,23 +22,27 @@ export function isBbqBainMarieEligibleMeal(meal: Pick<Meal, 'name' | 'category'>
   return meal.category === 'BBQ' && BBQ_BAIN_MARIE_NAMES.has(meal.name)
 }
 
-/** Maps cart/API size enum to customer-facing label for the 4-option dip + tray products */
+/**
+ * Customer-facing serving labels for named Dips.
+ * Current catalog uses LARGE (dip) and optionally BAIN_MARIE (tray).
+ * SMALL / MEDIUM remain labeled for historical cart/order rows only.
+ */
 export function dipTrayComboSizeLabel(size: 'SMALL' | 'MEDIUM' | 'LARGE' | 'BAIN_MARIE') {
   switch (size) {
     case 'SMALL':
-      return 'Medium dip'
+      return 'Medium dip (legacy)'
     case 'MEDIUM':
-      return 'Large dip'
+      return 'Large dip (legacy)'
     case 'LARGE':
-      return 'Medium tray'
+      return 'Large Dip — 500 g'
     case 'BAIN_MARIE':
-      return 'Large tray'
+      return 'Tray — serves 10–12'
     default:
       return size
   }
 }
 
-/** True when BAIN_MARIE is the pasta/noodle bain-marie add-on ($55), not “Large tray” for dips */
+/** True when BAIN_MARIE is the pasta/noodle bain-marie add-on ($55), not the dip tray option */
 export function shouldChargeBainMarieServiceFee(
   meal: Pick<Meal, 'name' | 'category' | 'pricingType'>,
   size: 'SMALL' | 'MEDIUM' | 'LARGE' | 'BAIN_MARIE' | null | undefined

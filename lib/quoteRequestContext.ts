@@ -9,7 +9,7 @@ export type QuoteRequestLineItem = {
   name: string
   quantity: number
   size: string | null
-  /** Customer-facing size label (e.g. food warmer vs dip “Large tray”). */
+  /** Customer-facing size label (e.g. food warmer vs dip tray). */
   sizeDisplay?: string | null
   lineTotal: number
 }

@@ -9,7 +9,7 @@ import { useCreateOrder } from '@/hooks/useOrders'
 import { StripeProvider } from '@/components/StripeProvider'
 import { StripeCardElement } from '@/components/StripeCardElement'
 import { PageBackground } from '@/components/PageBackground'
-import { buildQuoteRequestContextFromCart, saveQuoteRequestContextToSession } from '@/lib/quoteRequestContext'
+import { buildQuoteRequestContextFromCart, cartLineTotal, saveQuoteRequestContextToSession } from '@/lib/quoteRequestContext'
 import { shouldChargeBainMarieServiceFee } from '@/lib/dipTrayCombo'
 import { getMealMinimumQuantity } from '@/lib/categoryMinimums'
 import {
@@ -1074,7 +1074,7 @@ function CheckoutPageContent() {
                           )}
                           <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                           <p className="text-sm font-semibold text-[#D4AF37] mt-1">
-                            ${(item.meal.price * item.quantity).toFixed(2)}
+                            ${cartLineTotal(item).toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -2312,7 +2312,7 @@ function CheckoutPageContent() {
                                   )}
                                   <span className="block text-xs text-gray-600 mt-0.5">×{item.quantity}</span>
                                 </span>
-                                <span className="shrink-0">${(item.meal.price * item.quantity).toFixed(2)}</span>
+                                <span className="shrink-0">${cartLineTotal(item).toFixed(2)}</span>
                               </div>
                             ))}
                             <div className="flex justify-between text-sm font-semibold mt-2 pt-2 border-t">
