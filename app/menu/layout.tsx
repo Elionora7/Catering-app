@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { getSiteUrl } from '@/lib/siteUrl'
+import { getPageUrl } from '@/lib/siteUrl'
 
-const siteUrl = getSiteUrl()
+const menuUrl = getPageUrl('/menu')
 
 export const metadata: Metadata = {
   title: 'Menu — Lebanese & Mediterranean Catering Sydney',
@@ -18,13 +18,13 @@ export const metadata: Metadata = {
     title: 'Menu | Eliora Signature Catering — Lebanese & Mediterranean Sydney',
     description:
       'Lebanese and Mediterranean catering menu: platters, events, and daily family meals — Eliora Signature Catering.',
-    url: `${siteUrl}/menu`,
+    url: menuUrl,
     type: 'website',
     locale: 'en_AU',
     siteName: 'Eliora Signature Catering',
   },
   alternates: {
-    canonical: `${siteUrl}/menu`,
+    canonical: menuUrl,
   },
 }
 

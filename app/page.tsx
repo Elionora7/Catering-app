@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import { getSiteUrl } from '@/lib/siteUrl'
+import { getPageUrl } from '@/lib/siteUrl'
 import { HomePageClient } from './HomePageClient'
 
-const siteUrl = getSiteUrl()
+const homeUrl = getPageUrl('/')
 
 const homeTitle =
   'Lebanese Catering Sydney | Authentic Lebanese & Mediterranean Catering | Daily Family Meals'
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: homeTitle,
     description: homeDescription,
-    url: siteUrl,
+    url: homeUrl,
     siteName: 'Eliora Signature Catering',
     locale: 'en_AU',
     type: 'website',
@@ -40,29 +40,10 @@ export const metadata: Metadata = {
     description: homeDescription,
   },
   alternates: {
-    canonical: `${siteUrl}/`,
-  },
-}
-
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FoodEstablishment',
-  name: 'Eliora Signature Catering',
-  description: homeDescription,
-  url: siteUrl,
-  servesCuisine: ['Lebanese', 'Mediterranean'],
-  areaServed: {
-    '@type': 'City',
-    name: 'Sydney',
-    containedInPlace: { '@type': 'AdministrativeArea', name: 'New South Wales' },
+    canonical: homeUrl,
   },
 }
 
 export default function Home() {
-  return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <HomePageClient />
-    </>
-  )
+  return <HomePageClient />
 }

@@ -6,6 +6,7 @@ import { MIN_DELIVERY_ZONE_ORDER } from '@/lib/checkoutConstants'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { PrismaPg } from '@prisma/adapter-pg'
+import { resolveAdminSeedConfig } from './adminSeedConfig'
 
 function requireDatabaseUrl(): string {
   const u = process.env.DATABASE_URL?.trim()
@@ -36,17 +37,27 @@ async function main() {
   console.log('🌱 Starting seed...')
   logDatabaseTarget(databaseUrl)
 
-  // ----- Admin User -----
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@catering.com' },
-    update: {},
-    create: {
-      email: 'admin@catering.com',
-      name: 'Admin User',
-      password: await bcrypt.hash('admin123', 10),
-      role: 'ADMIN',
-    },
-  })
+  // ----- Admin User (opt-in only; never hard-code credentials) -----
+  const adminSeed = resolveAdminSeedConfig()
+  if (!adminSeed.enabled) {
+    console.log('[seed] SEED_ADMIN is not true — skipping admin user create/update')
+  } else {
+    const passwordHash = await bcrypt.hash(adminSeed.password, 10)
+    await prisma.user.upsert({
+      where: { email: adminSeed.email },
+      update: {
+        password: passwordHash,
+        role: 'ADMIN',
+      },
+      create: {
+        email: adminSeed.email,
+        name: 'Admin User',
+        password: passwordHash,
+        role: 'ADMIN',
+      },
+    })
+    console.log(`[seed] Admin user upserted for ${adminSeed.email}`)
+  }
 
   // ----- Sample Customer -----
   const customer = await prisma.user.upsert({
