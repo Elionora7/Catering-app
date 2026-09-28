@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
 import { getPageUrl } from '@/lib/siteUrl'
 
-const url = getPageUrl('/contact')
-
-export const metadata: Metadata = {
-  alternates: { canonical: url },
+/** Use generateMetadata (not a static metadata export) so this merges with the root generateMetadata. */
+export function generateMetadata(): Metadata {
+  const url = getPageUrl('/contact')
+  return {
+    alternates: { canonical: url },
+    openGraph: { url },
+  }
 }
 
 export default function ContactLayout({ children }: { children: React.ReactNode }) {
