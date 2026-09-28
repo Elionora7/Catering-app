@@ -36,13 +36,11 @@ export function Navbar() {
               <Image
                 src="/logo-clear.png"
                 alt="Eliora Signature Catering Logo"
-                width={200}
-                height={133}
-                sizes="200px"
+                width={scrolled ? 160 : 200}
+                height={scrolled ? 107 : 133}
+                sizes={scrolled ? '160px' : '200px'}
                 priority
-                className={`object-contain transition-all duration-300 ${
-                  scrolled ? 'h-[45px] w-auto' : 'h-[55px] w-auto'
-                }`}
+                className="h-auto w-auto object-contain transition-all duration-300"
               />
             </Link>
             <div className="hidden md:flex space-x-1">
