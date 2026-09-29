@@ -10,7 +10,7 @@ export function LargeEventCTA() {
         <FadeUp>
           <div className="bg-gradient-to-r from-[#0F3D3E] to-[#0F3D3E]/90 rounded-2xl p-8 md:p-12 text-center shadow-xl">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-playfair">
-              Planning a Large Event?
+              Corporate catering Sydney and large events
             </h2>
             <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
               For weddings, corporate events, and large gatherings, request a custom catering quote.
@@ -19,7 +19,7 @@ export function LargeEventCTA() {
               href="/request-quote"
               className="inline-block px-8 py-3 bg-[#D4AF37] text-[#0F3D3E] font-semibold rounded-lg hover:bg-[#c9a030] transition-all duration-200 hover:scale-105 shadow-lg"
             >
-              Request Quote
+              Request a Lebanese catering quote
             </Link>
           </div>
         </FadeUp>

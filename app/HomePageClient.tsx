@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { HeroSection } from '@/components/HeroSection'
+import { HomeIntro } from '@/components/HomeIntro'
 import { HomeMenuCategories } from '@/components/HomeMenuCategories'
 import { HowCateringWorks } from '@/components/HowCateringWorks'
 import { CateringHighlights } from '@/components/CateringHighlights'
@@ -69,6 +70,7 @@ function HomeContent() {
         </div>
       )}
       <HeroSection />
+      <HomeIntro />
       <HomeMenuCategories />
       <HowCateringWorks />
       <CateringHighlights />
@@ -83,6 +85,7 @@ export function HomePageClient() {
       fallback={
         <main className="min-h-screen bg-gray-50">
           <HeroSection />
+          <HomeIntro />
           <HomeMenuCategories />
           <HowCateringWorks />
           <CateringHighlights />

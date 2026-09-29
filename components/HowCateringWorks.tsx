@@ -1,9 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { FadeUp } from '@/components/animations/FadeUp'
 
 const steps = [
-  { title: 'Browse the menu', description: 'Choose from Lebanese favourites and catering platters.' },
+  { title: 'Browse the Lebanese catering menu', description: 'Choose from Lebanese favourites and catering platters.' },
   { title: 'Add items to your cart', description: 'Adjust quantities and build the perfect spread.' },
   { title: 'Choose delivery date and location', description: 'We confirm delivery availability via postcode at checkout.' },
   { title: 'Enjoy fresh catering', description: 'Prepared with care and delivered across Sydney.' },
@@ -15,7 +16,7 @@ export function HowCateringWorks() {
       <div className="max-w-7xl mx-auto">
         <FadeUp>
           <h2 className="text-4xl md:text-5xl font-bold text-[#0F3D3E] text-center mb-4 font-playfair">
-            How Catering Works
+            How Lebanese catering delivery works in Sydney
           </h2>
           <p className="text-center text-[#0F3D3E]/70 mb-12 text-lg max-w-2xl mx-auto">
             Simple ordering designed for catering.
@@ -30,7 +31,13 @@ export function HowCateringWorks() {
                   {index + 1}.
                 </div>
                 <h3 className="font-semibold text-[#0F3D3E] mb-2">
-                  {step.title}
+                  {index === 0 ? (
+                    <Link href="/menu" className="hover:text-[#D4AF37] transition-colors">
+                      {step.title}
+                    </Link>
+                  ) : (
+                    step.title
+                  )}
                 </h3>
                 <p className="text-sm text-[#0F3D3E]/70">
                   {step.description}

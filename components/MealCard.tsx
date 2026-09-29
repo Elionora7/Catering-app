@@ -26,6 +26,7 @@ export function MealCard({ meal, index = 0 }: MealCardProps) {
     : meal.priceSmall ?? (meal.pricingType === 'SIZED' ? meal.priceLarge ?? null : null)
   const isBbqBainMarieEligible = isBbqBainMarieEligibleMeal(meal)
   const isCheesecakeImage = meal.name.toLowerCase().includes('cheesecake')
+  const foodImageAlt = `${meal.name} for Lebanese catering in Sydney`
 
   /** Mujadara is not offered in the food warmer tray size (even if legacy DB rows still have a price). */
   const isMujadara = meal.name === 'Lentils with Rice (Mujadara)'
@@ -162,7 +163,7 @@ export function MealCard({ meal, index = 0 }: MealCardProps) {
             {meal.imageUrl ? (
               <Image
                 src={meal.imageUrl}
-                alt={meal.name}
+                alt={foodImageAlt}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 unoptimized={isCheesecakeImage}
@@ -201,15 +202,15 @@ export function MealCard({ meal, index = 0 }: MealCardProps) {
           {meal.imageUrl ? (
             <Image
               src={meal.imageUrl}
-              alt={meal.name}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              unoptimized={isCheesecakeImage}
-              className={
-                isCheesecakeImage
-                  ? 'object-contain bg-white transition-transform duration-300'
-                  : 'object-cover group-hover:scale-110 transition-transform duration-300'
-              }
+                alt={foodImageAlt}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                unoptimized={isCheesecakeImage}
+                className={
+                  isCheesecakeImage
+                    ? 'object-contain bg-white transition-transform duration-300'
+                    : 'object-cover group-hover:scale-110 transition-transform duration-300'
+                }
               priority={index < 4}
             />
           ) : (

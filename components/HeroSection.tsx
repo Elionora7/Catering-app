@@ -38,13 +38,13 @@ export function HeroSection() {
               href="/menu"
               className="px-8 py-4 bg-[#D4AF37] text-[#0F3D3E] font-semibold rounded-lg text-lg hover:bg-[#c9a030] transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-[#D4AF37]/50 hover:scale-105"
             >
-              Browse Menu
+              Browse the Lebanese catering menu
             </Link>
             <Link
               href="/request-quote"
               className="px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg text-lg hover:bg-white hover:text-[#0F3D3E] transition-all duration-200 hover:scale-105"
             >
-              Request Quote
+              Request a Lebanese catering quote
             </Link>
           </div>
         </motion.div>

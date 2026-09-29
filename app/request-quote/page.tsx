@@ -161,7 +161,7 @@ function RequestQuotePageContent() {
     return (
       <PageBackground>
         <PageHero 
-          title="Quote Request Submitted!" 
+          title="Lebanese Catering Quote Received"
           subtitle="Thank you for your interest" 
         />
         <main className="min-h-screen py-12">
@@ -200,7 +200,7 @@ function RequestQuotePageContent() {
   return (
     <PageBackground>
       <PageHero 
-        title="Request a Quote" 
+        title="Request a Lebanese Catering Quote in Sydney"
         subtitle="Tell us about your event — you can request a quote with or without selecting items. We’ll respond with pricing and availability." 
       />
       <main className="min-h-screen py-12">
@@ -209,6 +209,24 @@ function RequestQuotePageContent() {
 
             <FadeUp delay={0.2}>
               <div className="bg-white rounded-lg shadow-xl p-6 sm:p-8 md:p-12">
+            <h2 className="text-2xl font-bold text-[#0F3D3E] mb-4 font-playfair">
+              Event details
+            </h2>
+            <p className="text-[#0F3D3E]/80 leading-relaxed mb-6">
+              Request a Lebanese catering quote for events and corporate catering in Sydney. Check the{' '}
+              <Link href="/menu" className="text-[#D4AF37] font-semibold hover:underline">
+                Lebanese catering menu
+              </Link>{' '}
+              and{' '}
+              <Link href="/service-areas" className="text-[#D4AF37] font-semibold hover:underline">
+                Sydney delivery areas
+              </Link>
+              , or{' '}
+              <Link href="/contact" className="text-[#D4AF37] font-semibold hover:underline">
+                contact Eliora Signature Catering
+              </Link>{' '}
+              on 0410 759 741.
+            </p>
             {!hasCartLines && (
               <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
                 <p className="font-semibold text-red-900 mb-1">You can request a quote with or without selecting items.</p>

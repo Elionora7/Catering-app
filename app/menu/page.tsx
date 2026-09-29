@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import PageContainer from '@/components/PageContainer'
 import { PageBackground } from '@/components/PageBackground'
 import { PageHero } from '@/components/PageHero'
+import Link from 'next/link'
 
 // Define category order and display names
 const CATEGORY_ORDER = [
@@ -101,7 +102,7 @@ function MenuPageContent() {
   if (isLoading) {
     return (
       <PageBackground>
-        <PageHero title="Our Menu" subtitle="Authentic Lebanese catering for every occasion" />
+        <PageHero title="Lebanese Catering Menu Sydney" subtitle="BBQ platters, mezze, and Mediterranean mains" />
         <main className="min-h-screen">
           <PageContainer>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-12">
@@ -121,7 +122,7 @@ function MenuPageContent() {
   if (error) {
     return (
       <PageBackground>
-        <PageHero title="Our Menu" subtitle="Authentic Lebanese catering for every occasion" />
+        <PageHero title="Lebanese Catering Menu Sydney" subtitle="BBQ platters, mezze, and Mediterranean mains" />
         <main className="min-h-screen">
           <PageContainer>
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-12">
@@ -150,12 +151,39 @@ function MenuPageContent() {
 
   return (
     <PageBackground>
-      <PageHero 
-        title={selectedCategory || "Our Menu"} 
-        subtitle={selectedCategory ? "Browse all items in this category" : "Authentic Lebanese catering for every occasion"} 
+      <PageHero
+        title="Lebanese Catering Menu Sydney"
+        subtitle={
+          selectedCategory
+            ? `Browse ${selectedCategory} for Lebanese catering in Sydney`
+            : 'BBQ platters, mezze, and Mediterranean mains for delivery across Sydney'
+        }
       />
       <main className="min-h-screen">
         <PageContainer>
+          {!selectedCategory && (
+            <div className="max-w-3xl mx-auto pt-10 pb-2 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-[#0F3D3E] mb-4 font-playfair">
+                Platters, BBQ, and mezze
+              </h2>
+              <p className="text-[#0F3D3E]/80 leading-relaxed mb-4">
+                Choose a category to build authentic Lebanese catering for Sydney events, offices, and
+                family tables. Delivery is confirmed by postcode at checkout — see{' '}
+                <Link href="/service-areas" className="text-[#D4AF37] font-semibold hover:underline">
+                  Lebanese catering delivery areas in Sydney
+                </Link>
+                , or{' '}
+                <Link href="/request-quote" className="text-[#D4AF37] font-semibold hover:underline">
+                  request a Lebanese catering quote
+                </Link>{' '}
+                for larger guest lists. Need help?{' '}
+                <Link href="/contact" className="text-[#D4AF37] font-semibold hover:underline">
+                  Contact Eliora Signature Catering
+                </Link>
+                .
+              </p>
+            </div>
+          )}
           {selectedCategory && (
             <div className="mb-6 pt-8">
               <button
@@ -208,6 +236,9 @@ function MenuPageContent() {
           // Selected category items view
           selectedCategoryMeals ? (
             <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#0F3D3E] mb-6 font-playfair">
+                {selectedCategory}
+              </h2>
               {(() => {
                 const availableMeals = selectedCategoryMeals.filter((meal) => meal.isAvailable)
                 const unavailableMeals = selectedCategoryMeals.filter((meal) => !meal.isAvailable)
@@ -260,7 +291,7 @@ export default function MenuPage() {
   return (
     <Suspense fallback={
       <PageBackground>
-        <PageHero title="Our Menu" subtitle="Authentic Lebanese catering for every occasion" />
+        <PageHero title="Lebanese Catering Menu Sydney" subtitle="BBQ platters, mezze, and Mediterranean mains" />
         <main className="min-h-screen">
           <PageContainer>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-12">

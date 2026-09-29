@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { FadeUp } from '@/components/animations/FadeUp'
 
 const highlights = [
-  { title: 'BBQ platter', src: '/menu-images/bbq_mix.png' },
-  { title: 'Lebanese mixed platter', src: '/menu-images/rice%20with%20meat.png' },
-  { title: 'Finger food table', src: '/menu-images/mix-finger-food.png' },
-  { title: 'Mediterranean salads', src: '/menu-images/fattouch.png' },
-  { title: 'Paella', src: '/menu-images/paella.png' },
-  { title: 'Dessert table', src: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=900&h=675&fit=crop' },
+  { title: 'BBQ platter', src: '/menu-images/bbq_mix.png', alt: 'Mixed BBQ platter of grilled meats for Lebanese catering in Sydney' },
+  { title: 'Lebanese mixed platter', src: '/menu-images/rice%20with%20meat.png', alt: 'Lebanese mixed rice and meat platter for catering in Sydney' },
+  { title: 'Finger food table', src: '/menu-images/mix-finger-food.png', alt: 'Finger food and mini sandwiches for catering events in Sydney' },
+  { title: 'Mediterranean salads', src: '/menu-images/fattouch.png', alt: 'Fattoush Mediterranean salad for Lebanese catering in Sydney' },
+  { title: 'Paella', src: '/menu-images/paella.png', alt: 'Paella platter for Mediterranean catering in Sydney' },
+  { title: 'Dessert table', src: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=900&h=675&fit=crop', alt: 'Dessert table of sweet bites for catering in Sydney' },
 ] as const
 
 export function CateringHighlights() {
@@ -19,7 +19,7 @@ export function CateringHighlights() {
       <div className="max-w-7xl mx-auto">
         <FadeUp>
           <h2 className="text-4xl md:text-5xl font-bold text-[#0F3D3E] text-center mb-4 font-playfair">
-            Catering Highlights
+            Lebanese catering highlights in Sydney
           </h2>
           <p className="text-center text-[#0F3D3E]/70 mb-12 text-lg max-w-2xl mx-auto">
             A small preview of our catering style.
@@ -33,7 +33,7 @@ export function CateringHighlights() {
                 <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-100">
                   <Image
                     src={item.src}
-                    alt={item.title}
+                    alt={item.alt}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover group-hover:scale-110 transition-transform duration-300"
@@ -55,7 +55,7 @@ export function CateringHighlights() {
               href="/menu"
               className="inline-block px-8 py-3 bg-[#0F3D3E] text-white font-semibold rounded-lg hover:bg-[#0F3D3E]/90 transition-all duration-200 hover:scale-105"
             >
-              View Menu
+              View the Lebanese catering menu
             </Link>
           </div>
         </FadeUp>

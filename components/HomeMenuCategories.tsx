@@ -10,36 +10,42 @@ const categories = [
     title: 'BBQ & Grills',
     description: 'Skewers, wings, and mixed grill platters—perfect for events.',
     imageUrl: '/menu-images/bbq_mix.png',
+    alt: 'Lebanese mixed BBQ grill platter for catering in Sydney',
   },
   {
     key: 'Mediterranean Main Platters',
     title: 'Mediterranean Main Platters',
     description: 'Signature mains and traditional platters for sharing.',
     imageUrl: '/menu-images/rice%20with%20meat.png',
+    alt: 'Mediterranean rice and meat platter for Lebanese catering in Sydney',
   },
   {
     key: 'Gourmet Mini Sandwiches & Sliders',
     title: 'Gourmet Mini Sandwiches & Sliders',
     description: 'Mini bites, wraps, and canapés for easy catering.',
     imageUrl: '/menu-images/mix-finger-food.png',
+    alt: 'Gourmet mini sandwiches and finger food for catering in Sydney',
   },
   {
     key: 'Salads',
     title: 'Salads',
     description: 'Fresh, vibrant salads to balance your spread.',
     imageUrl: '/menu-images/fattouch.png',
+    alt: 'Fattoush salad platter for Lebanese catering in Sydney',
   },
   {
     key: 'Vegetarian Lebanese Platters',
     title: 'Vegetarian Lebanese Platters',
     description: 'Vegetarian platters and classic Lebanese favourites.',
     imageUrl: '/menu-images/vg-vine_leaves.png',
+    alt: 'Vegetarian stuffed vine leaves for Lebanese catering in Sydney',
   },
   {
     key: 'Desserts & Cups',
     title: 'Desserts & Cups',
     description: 'Finish strong with sweet bites, plus salad & fruit cups.',
     imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&h=600&fit=crop',
+    alt: 'Dessert cups and sweet bites for Lebanese catering in Sydney',
   },
 ] as const
 
@@ -49,7 +55,7 @@ export function HomeMenuCategories() {
       <div className="max-w-7xl mx-auto">
         <FadeUp>
           <h2 className="text-4xl md:text-5xl font-bold text-[#0F3D3E] text-center mb-4 font-playfair">
-            Menu Categories
+            Lebanese & Mediterranean menu categories
           </h2>
           <p className="text-center text-[#0F3D3E]/70 mb-12 text-lg max-w-2xl mx-auto">
             Start with a category, then build your cart in minutes.
@@ -66,7 +72,7 @@ export function HomeMenuCategories() {
                 <div className="relative h-44 sm:h-48 overflow-hidden bg-gray-100">
                   <Image
                     src={cat.imageUrl}
-                    alt={cat.title}
+                    alt={cat.alt}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover group-hover:scale-110 transition-transform duration-300"

@@ -30,12 +30,22 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link href="/menu" className="text-white/70 hover:text-[#D4AF37] transition-colors">
-                  Menu
+                  Lebanese catering menu
                 </Link>
               </li>
               <li>
                 <Link href="/request-quote" className="text-white/70 hover:text-[#D4AF37] transition-colors">
-                  Request Quote
+                  Request a Lebanese catering quote
+                </Link>
+              </li>
+              <li>
+                <Link href="/service-areas" className="text-white/70 hover:text-[#D4AF37] transition-colors">
+                  Lebanese catering delivery areas
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-white/70 hover:text-[#D4AF37] transition-colors">
+                  Contact Eliora Signature Catering
                 </Link>
               </li>
               <li>
@@ -52,7 +62,7 @@ export function Footer() {
             <ul className="space-y-2 text-white/70 text-sm">
               <li>
                 <Link href="/service-areas" className="hover:text-[#D4AF37] transition-colors">
-                  View All Service Areas
+                  Lebanese catering delivery areas in Sydney
                 </Link>
               </li>
               <li>Bankstown</li>
